@@ -90,3 +90,21 @@ def test_product_context_keeps_mock_notice(knowledge_base):
         "mock" in item.casefold()
         for item in context.specific_restrictions
     )
+
+
+def test_unknown_context_requests_clarification_without_financial_data(knowledge_base):
+    report = validate_knowledge_base(knowledge_base, raise_on_error=False)
+
+    context = build_context(
+        Intent.UNKNOWN,
+        "Pode explicar melhor?",
+        knowledge_base,
+        report,
+    )
+
+    assert context.sources == []
+    assert context.period is None
+    assert context.calculated_results == {}
+    assert context.relevant_profile == {}
+    assert any("não foi identificada" in item for item in context.missing_data)
+    assert any("Pedir esclarecimento" in item for item in context.specific_restrictions)
