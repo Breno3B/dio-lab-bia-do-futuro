@@ -151,7 +151,7 @@ flowchart TD
 | Processamento de dados | [pandas](https://pandas.pydata.org/) | Realiza a leitura, transformação, filtragem e análise dos dados financeiros. |
 | Executor local do LLM | [Ollama](https://ollama.com/) | Executa o modelo de linguagem localmente e disponibiliza uma API para integração com a aplicação. |
 | Modelo de linguagem | [Qwen3 8B](https://ollama.com/library/qwen3:8b) | Interpreta a solicitação e gera respostas em linguagem natural a partir do contexto estruturado fornecido pela aplicação. |
-| Base de conhecimento | [CSV](https://www.rfc-editor.org/rfc/rfc4180) e [JSON](https://www.json.org/json-en.html) | Armazena transações, histórico de atendimento, perfil do investidor e produtos financeiros disponíveis. |
+| Base de conhecimento | [CSV](https://www.rfc-editor.org/rfc/rfc4180) e [JSON](https://www.json.org/json-en.html) | Armazena dados mockados de transações, histórico de atendimento, perfil do investidor e produtos financeiros disponíveis, utilizados exclusivamente para fins educacionais e de demonstração. |
 | Construção de contexto | [Python](https://www.python.org/) | Seleciona somente as informações relevantes para cada pergunta, reduzindo ruído e o risco de respostas não fundamentadas. |
 | Regras de negócio | [Python](https://www.python.org/) | Aplica critérios determinísticos, como compatibilidade com o perfil do investidor, dados mínimos necessários e limites das orientações. |
 | Validação | [Python](https://www.python.org/) | Verifica se a resposta utiliza informações existentes, respeita o perfil do cliente, não inventa produtos e contém ressalvas quando necessário. |
