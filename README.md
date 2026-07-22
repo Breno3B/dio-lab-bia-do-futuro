@@ -17,7 +17,7 @@ A aplicação pode:
 
 - analisar receitas, despesas e saldo;
 - identificar categorias com maior concentração de gastos;
-- comparar períodos;
+- comparar períodos quando houver dados suficientes;
 - acompanhar metas financeiras;
 - recuperar temas do histórico de atendimento;
 - avaliar a compatibilidade entre o perfil mockado e os produtos disponíveis;
