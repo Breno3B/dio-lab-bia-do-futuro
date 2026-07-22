@@ -57,7 +57,6 @@ class OllamaLLMClient:
                 think=False,
                 keep_alive="10m",
                 options={"temperature": self.settings.ollama_temperature},
-                
             )
             content = response["message"]["content"]
             if not str(content).strip():
@@ -67,7 +66,9 @@ class OllamaLLMClient:
             raise
         except Exception as exc:  # biblioteca pode lançar exceções específicas por versão
             logger.exception("Falha ao consultar o Ollama")
-            raise LLMUnavailableError(f"Falha ao gerar resposta com Ollama: {exc}") from exc
+            raise LLMUnavailableError(
+                "Não foi possível consultar o modelo local."
+            ) from exc
 
     def stream(self, system_prompt: str, user_prompt: str) -> Iterator[str]:
         if not self.is_available():
@@ -90,4 +91,6 @@ class OllamaLLMClient:
                     yield str(content)
         except Exception as exc:
             logger.exception("Falha durante streaming do Ollama")
-            raise LLMUnavailableError(f"Falha ao gerar resposta com Ollama: {exc}") from exc
+            raise LLMUnavailableError(
+                "Não foi possível consultar o modelo local."
+            ) from exc
