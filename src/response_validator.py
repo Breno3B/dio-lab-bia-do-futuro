@@ -169,14 +169,18 @@ def validate_response(response: str, context: AgentContext) -> ResponseValidatio
             "A resposta não sinalizou a divergência existente no perfil."
         )
 
-    presents_financial_data = bool(
-        context.calculated_results or context.products or mentioned_products
+    requires_mock_notice = (
+        context.intent is Intent.PRODUCT_COMPATIBILITY
+        or any(
+            "mock" in restriction.casefold()
+            for restriction in context.specific_restrictions
+        )
     )
-    if presents_financial_data and not any(
+    if requires_mock_notice and not any(
         term in normalized for term in ("mock", "fict", "educacion")
     ):
         result.warnings.append(
-            "A resposta apresenta dados financeiros sem avisar que a base é mockada."
+            "A resposta deveria informar que os dados utilizados são mockados."
         )
 
     return result
