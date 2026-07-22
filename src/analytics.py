@@ -29,13 +29,26 @@ def filter_transactions(
     return filtered
 
 
+def _format_date_br(value: date | datetime | pd.Timestamp) -> str:
+    """Formata uma data no padrão brasileiro ``DD/MM/AAAA``."""
+    return pd.Timestamp(value).strftime("%d/%m/%Y")
+
+
 def available_period(transactions: pd.DataFrame) -> dict[str, str] | None:
+    """Retorna o período disponível já formatado para apresentação."""
     valid_dates = transactions["data"].dropna()
     if valid_dates.empty:
         return None
+
+    start = valid_dates.min()
+    end = valid_dates.max()
+    start_formatted = _format_date_br(start)
+    end_formatted = _format_date_br(end)
+
     return {
-        "inicio": valid_dates.min().date().isoformat(),
-        "fim": valid_dates.max().date().isoformat(),
+        "inicio": start_formatted,
+        "fim": end_formatted,
+        "descricao": f"{start_formatted} a {end_formatted}",
     }
 
 
