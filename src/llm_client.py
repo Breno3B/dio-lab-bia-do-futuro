@@ -43,8 +43,8 @@ class OllamaLLMClient:
     def generate(self, system_prompt: str, user_prompt: str) -> str:
         if not self.is_available():
             raise LLMUnavailableError(
-                f"O Ollama não está disponível em {self.settings.ollama_host}. "
-                "Inicie o serviço e confirme que o modelo está instalado."
+                "O modelo local não está disponível. "
+                "Confirme se o serviço está em execução."
             )
         try:
             response = self._client().chat(
@@ -73,7 +73,8 @@ class OllamaLLMClient:
     def stream(self, system_prompt: str, user_prompt: str) -> Iterator[str]:
         if not self.is_available():
             raise LLMUnavailableError(
-                f"O Ollama não está disponível em {self.settings.ollama_host}."
+                "O modelo local não está disponível. "
+                "Confirme se o serviço está em execução."
             )
         try:
             chunks = self._client().chat(
