@@ -55,3 +55,38 @@ def test_product_context_selects_products_after_profile_is_consistent(knowledge_
     )
 
     assert [product["nome"] for product in context.products] == ["Tesouro Selic"]
+
+
+def test_financial_summary_does_not_require_repeated_mock_notice(knowledge_base):
+    report = validate_knowledge_base(knowledge_base, raise_on_error=False)
+
+    context = build_context(
+        Intent.FINANCIAL_SUMMARY,
+        "saldo",
+        knowledge_base,
+        report,
+    )
+
+    assert context.period["descricao"] == "01/10/2025 a 10/10/2025"
+    assert context.limitations == []
+    assert not any(
+        "mock" in restriction.casefold()
+        for restriction in context.specific_restrictions
+    )
+
+
+def test_product_context_keeps_mock_notice(knowledge_base):
+    report = validate_knowledge_base(knowledge_base, raise_on_error=False)
+
+    context = build_context(
+        Intent.PRODUCT_COMPATIBILITY,
+        "produtos",
+        knowledge_base,
+        report,
+    )
+
+    assert any("mock" in item.casefold() for item in context.limitations)
+    assert any(
+        "mock" in item.casefold()
+        for item in context.specific_restrictions
+    )
