@@ -267,16 +267,50 @@ Instale as dependências de desenvolvimento:
 pip install -r requirements-dev.txt
 ```
 
-Execute os testes:
+Execute os testes automatizados:
 
 ```bash
 pytest
+```
+
+Execute os testes com relatório de cobertura:
+
+```bash
+pytest --cov=src --cov-report=term-missing
 ```
 
 Execute a análise estática:
 
 ```bash
 ruff check .
+```
+
+Os testes automatizados cobrem:
+
+- carregamento dos arquivos CSV e JSON;
+- validação da estrutura e consistência dos dados;
+- cálculos financeiros determinísticos;
+- classificação de intenção;
+- construção do contexto;
+- filtragem pelo catálogo fechado;
+- validação das respostas;
+- fluxo completo do orquestrador com cliente LLM simulado;
+- leitura das configurações padrão e das variáveis de ambiente.
+
+A integração com Ollama deve ser simulada nos testes automatizados. Isso evita depender do modelo local durante a execução da suíte e mantém os resultados rápidos e reproduzíveis.
+
+Os testes do `config.py` isolam as variáveis de ambiente com `monkeypatch` e recarregam o módulo quando necessário.
+
+Exemplo de execução de um módulo específico:
+
+```bash
+pytest tests/test_analytics.py
+```
+
+Exemplo de execução de um teste específico:
+
+```bash
+pytest tests/test_analytics.py::test_calculate_period_summary
 ```
 
 ---
