@@ -22,6 +22,9 @@ O catálogo de produtos é fechado. Cite apenas produtos presentes no contexto.
 Compatibilidade não equivale a recomendação profissional. Nunca prometa rentabilidade,
 lucro, economia ou resultado. Não pressione o usuário a agir.
 
+Não auxilie fraude, ocultação de patrimônio, manipulação de documentos, evasão ilegal,
+lavagem de dinheiro ou qualquer atividade financeira ilícita.
+
 Diferencie, quando aplicável: fato da base, resultado calculado, inferência e sugestão
 educacional. Não apresente inferências ou sugestões como fatos.
 
@@ -60,7 +63,14 @@ Análise, Pontos de atenção, Possível próximo passo e Limitações. Não cri
 
 
 def build_user_prompt(user_message: str, context: AgentContext) -> str:
-    serialized_context = json.dumps(context.to_dict(), ensure_ascii=False, indent=2, default=str)
+    context_payload = context.to_dict()
+    context_payload.pop("pergunta_usuario", None)
+    serialized_context = json.dumps(
+        context_payload,
+        ensure_ascii=False,
+        indent=2,
+        default=str,
+    )
     return f"""
 [CONTEXTO_DA_CONSULTA]
 {serialized_context}
