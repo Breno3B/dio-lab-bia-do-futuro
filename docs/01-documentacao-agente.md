@@ -8,11 +8,11 @@ Muitas pessoas têm dificuldade para compreender sua situação financeira de fo
 
 Além disso, assistentes financeiros tradicionais costumam apenas responder perguntas pontuais. Eles nem sempre analisam o contexto completo do cliente, identificam padrões relevantes ou alertam proativamente sobre possíveis riscos e oportunidades.
 
-O agente resolve esse problema ao reunir e interpretar os dados financeiros disponíveis para oferecer uma visão clara da saúde financeira do cliente, apoiar a organização do orçamento e apresentar orientações compatíveis com seu perfil.
+A ClaraMente resolve esse problema ao reunir e interpretar os dados financeiros disponíveis para oferecer uma visão clara da saúde financeira do cliente, apoiar a organização do orçamento e apresentar orientações compatíveis com seu perfil.
 
 ### Solução
 
-O **Agente de Saúde Financeira Pessoal** analisa os dados disponíveis na base de conhecimento para fornecer orientações personalizadas, educativas e fundamentadas.
+A **ClaraMente** analisa os dados disponíveis na base de conhecimento para fornecer orientações personalizadas, educativas e fundamentadas.
 
 De forma proativa, o agente pode:
 
@@ -32,7 +32,7 @@ O agente atua como um apoio à educação e à organização financeira. Ele nã
 
 ### Público-Alvo
 
-O agente é destinado a clientes pessoa física que desejam:
+A ClaraMente é destinada a clientes pessoa física que desejam:
 
 - compreender melhor seus hábitos financeiros;
 - organizar receitas e despesas;
@@ -48,11 +48,23 @@ O agente é destinado a clientes pessoa física que desejam:
 
 ### Nome do Agente
 
-**BIA — Bem-estar e Inteligência Financeira**
+**ClaraMente — Agente de Saúde Financeira Pessoal**
+
+O nome **ClaraMente** combina as ideias de clareza, consciência e compreensão. Ele representa o propósito do agente de transformar dados financeiros em explicações acessíveis, transparentes e úteis para apoiar decisões mais conscientes.
+
+O nome também reforça que o agente não deve apenas apresentar números ou conclusões prontas. A ClaraMente deve explicar o raciocínio por trás das análises, indicar quais dados foram considerados e diferenciar fatos, interpretações e sugestões.
+
+#### Assinatura sugerida
+
+> **ClaraMente — clareza para cuidar da sua saúde financeira.**
+
+#### Posicionamento
+
+A ClaraMente é uma agente educacional e consultiva. Ela auxilia o usuário a compreender sua situação financeira, organizar prioridades e avaliar opções disponíveis, mas não substitui profissionais habilitados nem toma decisões em nome do usuário.
 
 ### Personalidade
 
-A BIA possui uma personalidade:
+A ClaraMente possui uma personalidade:
 
 - **consultiva:** analisa o contexto antes de orientar;
 - **educativa:** explica conceitos financeiros em linguagem simples;
@@ -62,7 +74,7 @@ A BIA possui uma personalidade:
 - **transparente:** diferencia fatos presentes nos dados, interpretações e sugestões;
 - **objetiva:** prioriza informações úteis e ações práticas.
 
-A agente deve ajudar o cliente a compreender a própria situação, em vez de apenas entregar conclusões prontas. Sempre que fizer uma sugestão, deve explicar quais dados sustentam aquela orientação.
+A ClaraMente deve ajudar o cliente a compreender a própria situação, em vez de apenas entregar conclusões prontas. Sempre que fizer uma sugestão, deve explicar quais dados sustentam aquela orientação.
 
 ### Tom de Comunicação
 
@@ -75,11 +87,11 @@ A comunicação deve ser:
 - direta, mas sem transmitir urgência artificial;
 - cuidadosa ao tratar de riscos, dívidas e investimentos.
 
-A BIA não deve utilizar linguagem alarmista, prometer resultados, pressionar o cliente ou apresentar opiniões como fatos.
+A ClaraMente não deve utilizar linguagem alarmista, prometer resultados, pressionar o cliente ou apresentar opiniões como fatos.
 
 ### Exemplos de Linguagem
 
-- **Saudação:** "Olá! Sou a BIA, sua assistente de saúde financeira. Posso ajudar você a entender seus gastos, organizar prioridades e avaliar opções compatíveis com seu perfil."
+- **Saudação:** "Olá! Sou a ClaraMente, sua agente de saúde financeira pessoal. Posso ajudar você a entender seus gastos, organizar prioridades e avaliar opções compatíveis com seu perfil."
 - **Confirmação:** "Entendi. Vou considerar suas transações, seu perfil e as informações disponíveis antes de responder."
 - **Análise:** "Com base nas transações fornecidas, a categoria com maior concentração de gastos foi alimentação. Isso indica onde está a maior parcela das despesas registradas, mas não significa, por si só, que o valor seja inadequado."
 - **Sugestão:** "Uma ação possível é revisar os gastos recorrentes dessa categoria e definir um limite mensal. Essa sugestão se baseia no padrão observado no histórico disponível."
@@ -95,7 +107,7 @@ A BIA não deve utilizar linguagem alarmista, prometer resultados, pressionar o 
 
 ```mermaid
 flowchart TD
-    A[Cliente] -->|Mensagem| B[Interface de chat]
+    A[Cliente] -->|Mensagem| B[Interface Streamlit]
     B --> C[Camada de orquestração]
 
     C --> D[Carregamento e validação dos dados]
@@ -107,9 +119,10 @@ flowchart TD
     E --> E4[produtos_financeiros.json]
 
     C --> F[Construção do contexto]
-    F --> G[LLM]
+    F --> G[Ollama]
+    G --> G1[Qwen3 8B]
 
-    G --> H[Validação da resposta]
+    G1 --> H[Validação da resposta]
     H -->|Resposta válida| I[Resposta ao cliente]
     H -->|Dados insuficientes ou inconsistentes| J[Resposta segura ou pedido de informação]
 
@@ -119,37 +132,70 @@ flowchart TD
 
 ### Fluxo de Funcionamento
 
-1. O cliente envia uma mensagem pela interface de chat.
-2. A camada de orquestração identifica a intenção da solicitação.
-3. A aplicação seleciona apenas os dados necessários para responder à pergunta.
-4. Os arquivos da base de conhecimento são carregados e validados antes do uso.
-5. Informações relevantes são transformadas em um contexto estruturado para o modelo de linguagem.
-6. O LLM gera uma resposta seguindo o system prompt, as restrições de segurança e os dados recuperados.
-7. A resposta passa por validações para verificar se está fundamentada, coerente com o perfil e dentro do escopo permitido.
-8. A aplicação entrega a resposta ao cliente ou informa que os dados são insuficientes.
+1. O cliente envia uma mensagem pela interface desenvolvida com Streamlit.
+2. A camada de orquestração identifica a intenção da solicitação e determina quais dados são necessários.
+3. Os arquivos relevantes são carregados e validados pela aplicação.
+4. Python e pandas executam filtros, agregações e cálculos financeiros de forma determinística.
+5. A aplicação monta um contexto estruturado contendo apenas os dados e resultados necessários para a pergunta atual.
+6. O Ollama disponibiliza localmente o modelo Qwen3 8B para geração da resposta.
+7. O Qwen3 8B interpreta a solicitação e transforma os resultados calculados em uma explicação acessível, seguindo o system prompt e as restrições de segurança.
+8. A resposta passa por validações para verificar se está fundamentada, coerente com o perfil e dentro do escopo permitido.
+9. A aplicação entrega a resposta ao cliente ou informa que os dados são insuficientes.
 
 ### Componentes
 
-| Componente | Descrição |
-|------------|-----------|
-| Interface | Chatbot responsável por receber as mensagens e apresentar as respostas. O protótipo poderá ser implementado com Streamlit. |
-| Camada de orquestração | Controla o fluxo da aplicação, identifica a intenção do usuário, seleciona os dados relevantes e monta o contexto enviado ao LLM. |
-| LLM | Modelo de linguagem responsável por interpretar a solicitação e produzir uma resposta em linguagem natural, seguindo instruções e restrições definidas. |
-| Base de Conhecimento | Conjunto de arquivos CSV e JSON com transações, histórico de atendimento, perfil do investidor e produtos financeiros disponíveis. |
-| Carregamento de dados | Responsável por ler os arquivos, validar formatos, tratar valores ausentes e converter os dados em estruturas adequadas para consulta. |
-| Construção de contexto | Seleciona somente as informações relevantes para cada pergunta, reduzindo ruído e o risco de respostas não fundamentadas. |
-| Regras de negócio | Define critérios como compatibilidade com o perfil do investidor, necessidade de dados mínimos e limites das orientações fornecidas. |
-| Validação | Verifica se a resposta utiliza informações existentes, respeita o perfil do cliente, não inventa produtos e contém ressalvas quando necessário. |
-| Observabilidade | Registra erros técnicos, tipo de solicitação e resultado das validações, sem expor dados pessoais desnecessários. |
+| Componente | Tecnologia ou formato | Descrição |
+|------------|-----------------------|-----------|
+| Interface | [Streamlit](https://streamlit.io/) | Interface web responsável por receber as mensagens e apresentar análises, indicadores e respostas da ClaraMente. |
+| Camada de orquestração | [Python](https://www.python.org/) | Controla o fluxo da aplicação, identifica a intenção do usuário, seleciona os dados relevantes e monta o contexto enviado ao modelo. |
+| Processamento de dados | [pandas](https://pandas.pydata.org/) | Realiza a leitura, transformação, filtragem e análise dos dados financeiros. |
+| Executor local do LLM | [Ollama](https://ollama.com/) | Executa o modelo de linguagem localmente e disponibiliza uma API para integração com a aplicação. |
+| Modelo de linguagem | [Qwen3 8B](https://ollama.com/library/qwen3:8b) | Interpreta a solicitação e gera respostas em linguagem natural a partir do contexto estruturado fornecido pela aplicação. |
+| Base de conhecimento | [CSV](https://www.rfc-editor.org/rfc/rfc4180) e [JSON](https://www.json.org/json-en.html) | Armazena transações, histórico de atendimento, perfil do investidor e produtos financeiros disponíveis. |
+| Construção de contexto | [Python](https://www.python.org/) | Seleciona somente as informações relevantes para cada pergunta, reduzindo ruído e o risco de respostas não fundamentadas. |
+| Regras de negócio | [Python](https://www.python.org/) | Aplica critérios determinísticos, como compatibilidade com o perfil do investidor, dados mínimos necessários e limites das orientações. |
+| Validação | [Python](https://www.python.org/) | Verifica se a resposta utiliza informações existentes, respeita o perfil do cliente, não inventa produtos e contém ressalvas quando necessário. |
+| Observabilidade | [Python Logging](https://docs.python.org/3/library/logging.html) | Registra erros técnicos, tipo de solicitação e resultado das validações, sem expor dados pessoais desnecessários. |
 
 ### Base de Conhecimento Utilizada
 
 | Arquivo | Uso pelo agente |
 |---------|-----------------|
-| `transacoes.csv` | Analisar padrões, categorias, valores, recorrências e possíveis alterações no comportamento de gastos. |
-| `historico_atendimento.csv` | Recuperar dúvidas, solicitações e orientações anteriores relevantes para manter continuidade no atendimento. |
-| `perfil_investidor.json` | Identificar tolerância a risco, preferências, objetivos e restrições que devem ser respeitadas. |
-| `produtos_financeiros.json` | Consultar os produtos efetivamente disponíveis e suas características, sem inventar alternativas fora do catálogo. |
+| [`transacoes.csv`](../transacoes.csv) | Analisar padrões, categorias, valores, recorrências e possíveis alterações no comportamento de gastos. |
+| [`historico_atendimento.csv`](../historico_atendimento.csv) | Recuperar dúvidas, solicitações e orientações anteriores relevantes para manter continuidade no atendimento. |
+| [`perfil_investidor.json`](../perfil_investidor.json) | Identificar tolerância a risco, preferências, objetivos e restrições que devem ser respeitadas. |
+| [`produtos_financeiros.json`](../produtos_financeiros.json) | Consultar os produtos efetivamente disponíveis e suas características, sem inventar alternativas fora do catálogo. |
+
+### Separação de Responsabilidades
+
+- **Python e pandas:** carregamento dos arquivos, validação dos dados, filtros, cálculos, agregações e aplicação das regras de negócio.
+- **Ollama:** execução local do modelo e disponibilização da API utilizada pela aplicação.
+- **Qwen3 8B:** interpretação da solicitação e geração da explicação em linguagem natural.
+- **Streamlit:** interação com o usuário e apresentação dos resultados.
+
+Essa separação evita que o modelo de linguagem seja tratado como fonte de verdade para cálculos financeiros. Os valores devem ser produzidos pelo código; o modelo deve interpretá-los e explicá-los.
+
+### Rastreabilidade das Respostas
+
+Sempre que aplicável, a resposta da ClaraMente deve informar:
+
+- quais arquivos ou fontes internas foram consultados;
+- qual período foi analisado;
+- quais categorias, transações ou produtos foram considerados;
+- quais cálculos ou critérios sustentam a conclusão;
+- quais dados estavam ausentes, inválidos ou insuficientes.
+
+### Critérios de Qualidade
+
+Uma resposta adequada deve:
+
+- estar fundamentada nos dados disponíveis;
+- diferenciar fatos, cálculos, interpretações e sugestões;
+- apresentar valores, critérios e períodos relevantes;
+- declarar limitações e ausência de dados;
+- evitar promessas de rentabilidade ou resultados;
+- considerar o perfil do investidor antes de avaliar produtos;
+- preservar a privacidade dos dados processados localmente.
 
 ### Princípios Arquiteturais
 
@@ -212,7 +258,7 @@ Antes de apresentar uma orientação, a aplicação deve verificar:
 
 ### Privacidade e Uso de Dados
 
-Para o protótipo, serão utilizados dados fictícios disponibilizados no projeto. Em um cenário real, a solução deverá seguir princípios de privacidade e proteção de dados, incluindo:
+Para o protótipo, serão utilizados dados fictícios disponibilizados no projeto. O modelo será executado localmente com Ollama, reduzindo a necessidade de enviar os dados financeiros a serviços externos. Em um cenário real, a solução deverá seguir princípios de privacidade e proteção de dados, incluindo:
 
 - minimização dos dados utilizados;
 - controle de acesso;
