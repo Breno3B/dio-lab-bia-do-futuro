@@ -234,9 +234,27 @@ O `.env` não deve ser enviado ao GitHub. O `.gitignore` mantém esse arquivo fo
 
 ## Como Executar
 
-Execute o comando na raiz:
+O arquivo `src/app.py` utiliza imports absolutos a partir do pacote `src`.
+Por isso, execute o Streamlit a partir da raiz do projeto e inclua essa raiz
+no caminho de importação do Python.
+
+Linux ou macOS:
 
 ```bash
+PYTHONPATH=. streamlit run src/app.py
+```
+
+Windows PowerShell:
+
+```powershell
+$env:PYTHONPATH = "."
+streamlit run src/app.py
+```
+
+Windows Prompt de Comando:
+
+```cmd
+set PYTHONPATH=.
 streamlit run src/app.py
 ```
 
@@ -245,6 +263,10 @@ O Streamlit exibirá o endereço local da aplicação, normalmente:
 ```text
 http://localhost:8501
 ```
+
+> [!NOTE]
+> A variável `PYTHONPATH` definida dessa forma vale somente para a sessão atual
+> do terminal. Ela não precisa ser adicionada ao arquivo `.env`.
 
 ---
 
