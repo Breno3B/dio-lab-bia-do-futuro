@@ -40,7 +40,7 @@ def test_critical_error_for_guaranteed_profit():
     assert any("lucro garantido" in error for error in result.critical_errors)
 
 
-def test_warns_when_mock_notice_is_missing():
+def test_does_not_require_mock_notice_for_routine_financial_summary():
     context = AgentContext(
         intent=Intent.FINANCIAL_SUMMARY,
         user_message="saldo",
@@ -50,7 +50,20 @@ def test_warns_when_mock_notice_is_missing():
     result = validate_response("Seu saldo é R$ 100,00.", context)
 
     assert not result.is_blocked
-    assert any("mockada" in warning for warning in result.warnings)
+    assert result.warnings == []
+
+
+def test_warns_when_product_response_omits_mock_notice():
+    context = _product_context()
+    response = _product_response(
+        "O Tesouro Selic atende aos critérios analisados.",
+        ["Tesouro Selic"],
+    )
+
+    result = validate_response(response, context)
+
+    assert not result.is_blocked
+    assert any("mockados" in warning for warning in result.warnings)
 
 
 def test_accepts_authorized_product_declared_in_metadata():
