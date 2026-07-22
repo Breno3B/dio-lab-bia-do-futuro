@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from src.analytics import (
     calculate_expenses_by_category,
     calculate_goal_progress,
@@ -8,6 +10,7 @@ from src.analytics import (
 
 def test_period_summary(knowledge_base):
     result = calculate_period_summary(knowledge_base.transactions)
+
     assert result["total_entradas"] == 5000.0
     assert result["total_saidas"] == 1770.0
     assert result["saldo"] == 3230.0
@@ -15,17 +18,50 @@ def test_period_summary(knowledge_base):
 
 def test_expenses_by_category(knowledge_base):
     result = calculate_expenses_by_category(knowledge_base.transactions)
+
     assert result["maior_categoria"]["categoria"] == "moradia"
     assert result["maior_categoria"]["valor"] == 1200.0
 
 
 def test_goal_progress(knowledge_base):
     result = calculate_goal_progress(knowledge_base.investor_profile)
+
     assert result[0]["progresso_percentual"] == 66.67
+
+
+def test_goal_progress_preserves_missing_value_instead_of_zero(knowledge_base):
+    profile = deepcopy(knowledge_base.investor_profile)
+    profile.pop("reserva_emergencia_atual")
+
+    result = calculate_goal_progress(profile)
+
+    assert result[0]["valor_atual"] is None
+    assert result[0]["valor_restante"] is None
+    assert result[0]["progresso_percentual"] is None
+    assert "não foi informado" in result[0]["observacao"]
+
+
+def test_non_reserve_goal_uses_missing_value_instead_of_zero(knowledge_base):
+    profile = deepcopy(knowledge_base.investor_profile)
+    profile["metas"] = [
+        {
+            "meta": "Comprar um imóvel",
+            "valor_necessario": 100000.0,
+            "prazo": "2030-01",
+        }
+    ]
+
+    result = calculate_goal_progress(profile)
+
+    assert result[0]["valor_atual"] is None
+    assert result[0]["progresso_percentual"] is None
+    assert "não informa" in result[0]["observacao"]
 
 
 def test_products_respect_explicit_risk_tolerance(knowledge_base):
     result = find_compatible_products(
-        knowledge_base.investor_profile, knowledge_base.financial_products
+        knowledge_base.investor_profile,
+        knowledge_base.financial_products,
     )
+
     assert [product["nome"] for product in result] == ["Tesouro Selic"]

@@ -53,6 +53,7 @@ class AgentContext:
     calculated_results: dict[str, Any] = field(default_factory=dict)
     relevant_profile: dict[str, Any] = field(default_factory=dict)
     products: list[dict[str, Any]] = field(default_factory=list)
+    authorized_product_names: list[str] = field(default_factory=list)
     relevant_history: list[dict[str, Any]] = field(default_factory=list)
     inconsistencies: list[str] = field(default_factory=list)
     missing_data: list[str] = field(default_factory=list)
@@ -69,6 +70,7 @@ class AgentContext:
             "resultados_calculados": self.calculated_results,
             "dados_relevantes_perfil": self.relevant_profile,
             "produtos_encontrados_catalogo": self.products,
+            "nomes_produtos_autorizados": self.authorized_product_names,
             "historico_relevante": self.relevant_history,
             "inconsistencias": self.inconsistencies,
             "dados_ausentes": self.missing_data,

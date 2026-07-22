@@ -104,23 +104,47 @@ def compare_periods(
 
 
 def calculate_goal_progress(profile: dict[str, Any]) -> list[dict[str, Any]]:
-    current_reserve = float(profile.get("reserva_emergencia_atual", 0.0))
+    raw_current_reserve = profile.get("reserva_emergencia_atual")
+    current_reserve = (
+        float(raw_current_reserve) if raw_current_reserve is not None else None
+    )
+
     results: list[dict[str, Any]] = []
     for goal in profile.get("metas", []):
         needed = float(goal["valor_necessario"])
         is_reserve = "reserva" in str(goal["meta"]).casefold()
-        current = current_reserve if is_reserve else 0.0
-        results.append({
-            "meta": goal["meta"],
-            "prazo": goal["prazo"],
-            "valor_atual": round(current, 2),
-            "valor_necessario": round(needed, 2),
-            "valor_restante": round(max(needed - current, 0.0), 2),
-            "progresso_percentual": round(min(current / needed * 100, 100.0), 2) if needed else None,
-            "observacao": None if is_reserve else "A base não informa o valor atual desta meta.",
-        })
-    return results
+        current = current_reserve if is_reserve else None
 
+        if current is None:
+            observation = (
+                "O valor atual da reserva de emergência não foi informado."
+                if is_reserve
+                else "A base não informa o valor atual desta meta."
+            )
+            remaining = None
+            progress = None
+        else:
+            observation = None
+            remaining = round(max(needed - current, 0.0), 2)
+            progress = (
+                round(min(current / needed * 100, 100.0), 2)
+                if needed
+                else None
+            )
+
+        results.append(
+            {
+                "meta": goal["meta"],
+                "prazo": goal["prazo"],
+                "valor_atual": round(current, 2) if current is not None else None,
+                "valor_necessario": round(needed, 2),
+                "valor_restante": remaining,
+                "progresso_percentual": progress,
+                "observacao": observation,
+            }
+        )
+
+    return results
 
 def find_compatible_products(
     profile: dict[str, Any],

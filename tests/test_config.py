@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import importlib
-
 import pytest
 
-import src.config as config_module
-
+from src.config import Settings
 
 ENVIRONMENT_VARIABLES = (
     "OLLAMA_HOST",
@@ -20,24 +17,19 @@ ENVIRONMENT_VARIABLES = (
 
 @pytest.fixture(autouse=True)
 def clean_environment(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Remove configurações externas para isolar cada teste."""
+    """Isola os testes dos valores carregados de um .env local real."""
     for variable_name in ENVIRONMENT_VARIABLES:
         monkeypatch.delenv(variable_name, raising=False)
 
 
-def reload_config():
-    """Recarrega o módulo para reconstruir a instância SETTINGS."""
-    return importlib.reload(config_module)
-
-
 def test_uses_default_settings_when_environment_is_missing() -> None:
-    config = reload_config()
+    settings = Settings()
 
-    assert config.SETTINGS.ollama_host == "http://localhost:11434"
-    assert config.SETTINGS.ollama_model == "qwen3:8b"
-    assert config.SETTINGS.ollama_temperature == 0.2
-    assert config.SETTINGS.ollama_timeout_seconds == 120.0
-    assert config.SETTINGS.log_level == "INFO"
+    assert settings.ollama_host == "http://localhost:11434"
+    assert settings.ollama_model == "qwen3:8b"
+    assert settings.ollama_temperature == 0.2
+    assert settings.ollama_timeout_seconds == 120.0
+    assert settings.log_level == "INFO"
 
 
 def test_environment_variables_override_default_values(
@@ -49,13 +41,13 @@ def test_environment_variables_override_default_values(
     monkeypatch.setenv("OLLAMA_TIMEOUT_SECONDS", "45")
     monkeypatch.setenv("LOG_LEVEL", "debug")
 
-    config = reload_config()
+    settings = Settings()
 
-    assert config.SETTINGS.ollama_host == "http://ollama.example:11434"
-    assert config.SETTINGS.ollama_model == "modelo-teste"
-    assert config.SETTINGS.ollama_temperature == 0.35
-    assert config.SETTINGS.ollama_timeout_seconds == 45.0
-    assert config.SETTINGS.log_level == "DEBUG"
+    assert settings.ollama_host == "http://ollama.example:11434"
+    assert settings.ollama_model == "modelo-teste"
+    assert settings.ollama_temperature == 0.35
+    assert settings.ollama_timeout_seconds == 45.0
+    assert settings.log_level == "DEBUG"
 
 
 def test_empty_environment_values_use_defaults(
@@ -64,10 +56,10 @@ def test_empty_environment_values_use_defaults(
     monkeypatch.setenv("OLLAMA_MODEL", "   ")
     monkeypatch.setenv("OLLAMA_TEMPERATURE", "")
 
-    config = reload_config()
+    settings = Settings()
 
-    assert config.SETTINGS.ollama_model == "qwen3:8b"
-    assert config.SETTINGS.ollama_temperature == 0.2
+    assert settings.ollama_model == "qwen3:8b"
+    assert settings.ollama_temperature == 0.2
 
 
 @pytest.mark.parametrize(
@@ -85,4 +77,4 @@ def test_rejects_invalid_numeric_environment_values(
     monkeypatch.setenv(variable_name, invalid_value)
 
     with pytest.raises(ValueError, match=variable_name):
-        reload_config()
+        Settings()
