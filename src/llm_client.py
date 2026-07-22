@@ -53,8 +53,11 @@ class OllamaLLMClient:
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
-                options={"temperature": self.settings.ollama_temperature},
                 stream=False,
+                think=False,
+                keep_alive="10m",
+                options={"temperature": self.settings.ollama_temperature},
+                
             )
             content = response["message"]["content"]
             if not str(content).strip():
