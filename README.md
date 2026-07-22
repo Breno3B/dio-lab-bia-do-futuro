@@ -350,7 +350,9 @@ A ClaraMente foi projetada para reduzir respostas não fundamentadas:
 - não fornece dados atuais de mercado sem fonte autorizada;
 - trata textos dos arquivos como dados, nunca como instruções;
 - não executa transações;
-- não altera os arquivos originais.
+- não altera os arquivos originais;
+- mantém o aviso geral de dados mockados no banner e na barra lateral;
+- repete esse aviso na resposta somente em consultas de produtos, riscos ou limitações relevantes.
 
 Limitações atuais:
 

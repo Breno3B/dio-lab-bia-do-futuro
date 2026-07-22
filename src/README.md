@@ -145,6 +145,18 @@ A integração com Ollama deve ser simulada nos testes automatizados, evitando d
 
 Ao testar configurações, as variáveis de ambiente devem ser isoladas com `monkeypatch` e o módulo deve ser recarregado quando necessário.
 
+
+---
+
+## Apresentação das Respostas
+
+- períodos são enviados ao modelo e exibidos no formato brasileiro `DD/MM/AAAA`;
+- o aviso geral de dados mockados permanece no banner e na barra lateral;
+- respostas rotineiras de saldo, gastos e metas não repetem esse aviso;
+- consultas sobre produtos, riscos ou limitações relevantes mantêm uma ressalva breve.
+
+Essa política evita redundância sem remover alertas necessários em contextos de maior risco.
+
 ---
 
 ## Documentação Relacionada
