@@ -209,7 +209,7 @@ As configurações possuem valores padrão, mas podem ser personalizadas por mei
 | `OLLAMA_HOST` | `http://localhost:11434` | Endereço do serviço Ollama. |
 | `OLLAMA_MODEL` | `qwen3:8b` | Modelo local utilizado. |
 | `OLLAMA_TEMPERATURE` | `0.2` | Variabilidade inicial das respostas. |
-| `OLLAMA_TIMEOUT_SECONDS` | `120` | Limite de espera da chamada ao modelo. |
+| `OLLAMA_TIMEOUT_SECONDS` | `300` | Limite de espera da chamada ao modelo. |
 | `LOG_LEVEL` | `INFO` | Nível de logs da aplicação. |
 
 Crie o arquivo local a partir do exemplo.
