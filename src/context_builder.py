@@ -142,18 +142,9 @@ def build_context(
         )
 
     else:
-        context.sources = [
-            "data/transacoes.csv",
-            "data/perfil_investidor.json",
-        ]
-        context.period = available_period(transactions)
-        context.calculated_results = calculate_period_summary(transactions)
-        context.relevant_profile = {
-            "objetivo_principal": profile.get("objetivo_principal"),
-        }
         context.missing_data.append("A intenção não foi identificada com confiança.")
         context.specific_restrictions.append(
-            "Pedir esclarecimento caso a pergunta permaneça ambígua."
+            "Pedir esclarecimento antes de consultar ou apresentar dados financeiros."
         )
 
     return context
