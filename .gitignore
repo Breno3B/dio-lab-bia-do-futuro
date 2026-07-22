@@ -58,7 +58,6 @@ models/
 
 # IDEs e editores
 .idea/
-.vscode/
 *.swp
 *.swo
 *~
