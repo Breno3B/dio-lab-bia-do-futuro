@@ -62,7 +62,13 @@ def render_context_details(response) -> None:
     with st.expander("Fontes, contexto e validações"):
         st.write("**Intenção:**", response.intent.value)
         st.write("**Fontes:**", response.context.sources or "Nenhuma")
-        st.write("**Período:**", response.context.period or "Não aplicável")
+        period = response.context.period
+        period_label = (
+            period.get("descricao")
+            if isinstance(period, dict)
+            else None
+        )
+        st.write("**Período:**", period_label or period or "Não aplicável")
         if response.context.limitations:
             st.write("**Limitações:**")
             for limitation in response.context.limitations:
