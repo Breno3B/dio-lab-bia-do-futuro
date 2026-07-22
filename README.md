@@ -41,7 +41,7 @@ Os cálculos são realizados de forma determinística por Python e pandas. O mod
 - proteção contra prompt injection;
 - validação dos dados antes da análise;
 - validação básica das respostas;
-- rastreabilidade de fontes, filtros e limitações;
+- configurações locais por arquivo `.env`;
 - testes automatizados com pytest.
 
 ---
@@ -85,6 +85,7 @@ flowchart TD
 | [Streamlit](https://streamlit.io/) | Interface web conversacional. |
 | [Ollama](https://ollama.com/) | Execução local do modelo de linguagem. |
 | [Qwen3 8B](https://ollama.com/library/qwen3:8b) | Modelo responsável pela geração das respostas. |
+| [python-dotenv](https://pypi.org/project/python-dotenv/) | Carregamento das configurações locais do arquivo `.env`. |
 | [pytest](https://docs.pytest.org/) | Testes automatizados. |
 | [Ruff](https://docs.astral.sh/ruff/) | Verificação de qualidade e padronização do código. |
 
@@ -137,14 +138,6 @@ dio-lab-bia-do-futuro/
 │   ├── prompts.py
 │   └── response_validator.py
 ├── tests/
-│   ├── conftest.py
-│   ├── test_analytics.py
-│   ├── test_context_builder.py
-│   ├── test_data_loader.py
-│   ├── test_data_validator.py
-│   ├── test_intent_classifier.py
-│   ├── test_orchestrator.py
-│   └── test_response_validator.py
 ├── .env.example
 ├── .gitignore
 ├── pytest.ini
@@ -209,7 +202,7 @@ Certifique-se de que o Ollama esteja em execução antes de iniciar a aplicaçã
 
 ## Configuração
 
-A aplicação possui valores padrão apropriados para execução local:
+As configurações possuem valores padrão, mas podem ser personalizadas por meio de um arquivo `.env` na raiz.
 
 | Variável | Valor padrão | Descrição |
 |---|---|---|
@@ -219,9 +212,7 @@ A aplicação possui valores padrão apropriados para execução local:
 | `OLLAMA_TIMEOUT_SECONDS` | `120` | Limite de espera da chamada ao modelo. |
 | `LOG_LEVEL` | `INFO` | Nível de logs da aplicação. |
 
-O arquivo [`.env.example`](.env.example) documenta as configurações disponíveis.
-
-Para criar uma configuração local:
+Crie o arquivo local a partir do exemplo.
 
 Linux ou macOS:
 
@@ -235,13 +226,15 @@ Windows PowerShell:
 Copy-Item .env.example .env
 ```
 
-O arquivo `.env` é local e está listado no `.gitignore`.
+O `src/config.py` carrega automaticamente o arquivo `.env` com `python-dotenv`. Variáveis definidas diretamente no sistema têm prioridade e não são sobrescritas.
+
+O `.env` não deve ser enviado ao GitHub. O `.gitignore` mantém esse arquivo fora do versionamento, enquanto `.env.example` permanece no repositório como documentação.
 
 ---
 
 ## Como Executar
 
-Execute o comando na raiz do projeto:
+Execute o comando na raiz:
 
 ```bash
 streamlit run src/app.py
@@ -264,8 +257,6 @@ http://localhost:8501
 - Já falei anteriormente sobre reserva de emergência?
 - Meus gastos aumentaram em relação ao período anterior?
 
-A resposta depende dos dados disponíveis e das intenções suportadas pela aplicação.
-
 ---
 
 ## Testes e Qualidade
@@ -287,17 +278,6 @@ Execute a análise estática:
 ```bash
 ruff check .
 ```
-
-Os testes cobrem:
-
-- carregamento dos arquivos;
-- validação da estrutura dos dados;
-- cálculos financeiros;
-- classificação de intenção;
-- construção do contexto;
-- regras do catálogo fechado;
-- validação de respostas;
-- fluxo de orquestração com o cliente LLM simulado.
 
 ---
 
@@ -348,7 +328,7 @@ Próximas etapas:
 
 - validar a aplicação funcional com o modelo local;
 - ampliar os testes de segurança e anti-alucinação;
-- definir e registrar as métricas de avaliação;
+- executar a avaliação definida em `docs/04-metricas.md`;
 - documentar os resultados;
 - produzir o pitch final.
 
