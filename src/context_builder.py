@@ -12,10 +12,9 @@ from src.analytics import (
 )
 from src.models import AgentContext, Intent, KnowledgeBase, ValidationReport
 
-COMMON_LIMITATIONS = [
-    "A base contém dados mockados e possui finalidade educacional.",
-    "A aplicação não possui dados financeiros ou de mercado em tempo real.",
-]
+MOCK_DATA_NOTICE = (
+    "Os dados utilizados são mockados e possuem finalidade educacional."
+)
 
 
 def _has_profile_conflict(context: AgentContext) -> bool:
@@ -35,7 +34,6 @@ def build_context(
     context = AgentContext(
         intent=intent,
         user_message=user_message,
-        limitations=list(COMMON_LIMITATIONS),
     )
 
     if validation_report:
@@ -106,10 +104,12 @@ def build_context(
                 knowledge_base.financial_products,
             )
 
+        context.limitations.append(MOCK_DATA_NOTICE)
         context.specific_restrictions.extend(
             [
                 "Citar somente produtos presentes em produtos_encontrados_catalogo.",
                 "Não tratar rentabilidade como garantia de retorno.",
+                "Informar brevemente que os dados utilizados são mockados e educacionais.",
                 "Responder no formato estruturado definido pelo system prompt para consultas de produtos.",
             ]
         )
@@ -128,6 +128,9 @@ def build_context(
         )
 
     elif intent is Intent.CURRENT_MARKET_DATA:
+        context.limitations.append(
+            "A aplicação não possui dados financeiros ou de mercado em tempo real."
+        )
         context.missing_data.append("A base local não possui dados atuais de mercado.")
         context.specific_restrictions.append(
             "Não informar valores atuais usando conhecimento interno do modelo."
