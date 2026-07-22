@@ -1,11 +1,24 @@
 from copy import deepcopy
 
 from src.analytics import (
+    available_period,
     calculate_expenses_by_category,
     calculate_goal_progress,
     calculate_period_summary,
     find_compatible_products,
 )
+
+
+
+
+def test_available_period_uses_brazilian_date_format(knowledge_base):
+    result = available_period(knowledge_base.transactions)
+
+    assert result == {
+        "inicio": "01/10/2025",
+        "fim": "10/10/2025",
+        "descricao": "01/10/2025 a 10/10/2025",
+    }
 
 
 def test_period_summary(knowledge_base):
