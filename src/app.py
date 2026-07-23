@@ -61,7 +61,12 @@ def render_sidebar(llm_client: OllamaLLMClient) -> None:
 def render_context_details(response) -> None:
     with st.expander("Fontes, contexto e validações"):
         st.write("**Intenção:**", response.intent.value)
-        st.write("**Fontes:**", response.context.sources or "Nenhuma")
+        st.write("**Fontes:**")
+        if response.context.sources:
+            for source in response.context.sources:
+                st.markdown(f"- `{source}`")
+        else:
+            st.write("Nenhuma")
         period = response.context.period
         period_label = (
             period.get("descricao")
