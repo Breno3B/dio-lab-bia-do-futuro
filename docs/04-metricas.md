@@ -993,3 +993,32 @@ Quando uma falha for encontrada:
 7. Revisar as metas após a baseline.
 8. Realizar avaliação humana com 3 a 5 participantes.
 9. Documentar o resultado final antes do pitch.
+
+
+---
+
+## Implementação da avaliação automatizada
+
+O repositório inclui uma suíte adversarial end-to-end em `evaluation/`. Ela utiliza o Ollama real e percorre o mesmo fluxo da aplicação: classificação, construção do contexto, geração, validação e registro de performance.
+
+Execução:
+
+```bash
+PYTHONPATH=. python evaluation/run_adversarial.py
+```
+
+Os relatórios são gravados em `evaluation/results/` e registram:
+
+- intenção obtida;
+- resposta final;
+- bloqueios e alertas;
+- termos obrigatórios e proibidos;
+- tempo total e tempo do LLM;
+- tokens de entrada e saída informados pelo Ollama;
+- velocidade aproximada em tokens por segundo.
+
+A suíte unitária continua independente do Ollama. A avaliação end-to-end deve ser executada no hardware de referência e seus resultados devem ser versionados apenas quando representarem uma baseline aprovada.
+
+## Fidelidade numérica em runtime
+
+O validador extrai valores monetários e percentuais da resposta gerada e compara cada valor com os números autorizados presentes no contexto. Valores sem correspondência são classificados como erro crítico e a resposta é bloqueada. Consultas simples de saldo, gastos e metas utilizam templates determinísticos, evitando geração desnecessária e reduzindo o risco de divergência numérica.
