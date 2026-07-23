@@ -54,7 +54,7 @@ def render_sidebar(llm_client: OllamaLLMClient) -> None:
         st.success("Ollama disponível") if status else st.error("Ollama indisponível")
         st.caption("Todos os dados desta demonstração são fictícios e educacionais.")
         if st.button("Limpar conversa", use_container_width=True):
-            st.session_state.messages = []
+            del st.session_state.messages
             st.rerun()
 
 
@@ -99,7 +99,10 @@ def main() -> None:
     st.set_page_config(page_title="ClaraMente", page_icon="🧠", layout="centered")
     st.title("🧠 ClaraMente")
     st.caption("Clareza para cuidar da sua saúde financeira.")
-    st.info("Protótipo educacional com dados mockados. Não representa recomendação financeira profissional.")
+    st.info(
+        "Protótipo educacional com dados mockados. "
+        "Não representa recomendação financeira profissional."
+    )
 
     initialize_session()
 
@@ -128,7 +131,10 @@ def main() -> None:
         if column.button(suggestion, use_container_width=True):
             selected_prompt = suggestion
 
-    user_message = selected_prompt or st.chat_input("Pergunte sobre os dados financeiros do projeto")
+    typed_message = st.chat_input("Pergunte sobre os dados financeiros do projeto")
+
+    user_message = selected_prompt or typed_message
+
     if not user_message:
         return
 
