@@ -123,10 +123,14 @@ class OllamaLLMClient:
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
-                options=self._chat_options(),
                 stream=True,
                 think=False,
                 keep_alive="10m",
+                options={
+                    "temperature": self.settings.ollama_temperature,
+                    "num_ctx": self.settings.ollama_num_ctx,
+                    "num_predict": self.settings.ollama_num_predict,
+                },
             )
             final_chunk: Any = None
             for chunk in chunks:
