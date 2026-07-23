@@ -43,6 +43,19 @@ def build_deterministic_response(context: AgentContext) -> str | None:
             f"das saídas. O total de despesas foi {_currency(values['total_saidas'])}."
         )
 
+    if context.intent is Intent.LOWEST_EXPENSE_CATEGORY:
+        values = context.calculated_results
+        smallest = values.get("menor_categoria")
+        if not smallest:
+            return "Não foram encontradas despesas no período disponível."
+        period = (context.period or {}).get("descricao", "período disponível")
+        return (
+            f"Entre {period}, a menor categoria de gastos foi "
+            f"**{smallest['categoria']}**, com {_currency(smallest['valor'])}, "
+            f"equivalente a {_percentage(smallest['participacao_percentual'])} "
+            f"das saídas. O total de despesas foi {_currency(values['total_saidas'])}."
+        )
+
     if context.intent is Intent.GOAL_PROGRESS:
         goals = context.calculated_results.get("progresso_metas", [])
         if not goals:

@@ -12,6 +12,7 @@ import pandas as pd
 class Intent(StrEnum):
     FINANCIAL_SUMMARY = "financial_summary"
     EXPENSE_ANALYSIS = "expense_analysis"
+    LOWEST_EXPENSE_CATEGORY = "lowest_expense_category"
     PERIOD_COMPARISON = "period_comparison"
     GOAL_PROGRESS = "goal_progress"
     PRODUCT_COMPATIBILITY = "product_compatibility"

@@ -47,7 +47,10 @@ def build_context(
         context.period = available_period(transactions)
         context.calculated_results = calculate_period_summary(transactions)
 
-    elif intent is Intent.EXPENSE_ANALYSIS:
+    elif intent in {
+        Intent.EXPENSE_ANALYSIS,
+        Intent.LOWEST_EXPENSE_CATEGORY,
+    }:
         context.sources = ["data/transacoes.csv"]
         context.period = available_period(transactions)
         context.filters = {"tipo": "saida"}

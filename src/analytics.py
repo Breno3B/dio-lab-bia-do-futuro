@@ -93,6 +93,7 @@ def calculate_expenses_by_category(
         "total_saidas": round(total, 2),
         "categorias": categories,
         "maior_categoria": categories[0] if categories else None,
+        "menor_categoria": categories[-1] if categories else None,
     }
 
 
