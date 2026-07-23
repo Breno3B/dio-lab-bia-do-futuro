@@ -40,7 +40,9 @@ Os cálculos são realizados de forma determinística por Python e pandas. O mod
 - catálogo fechado de produtos financeiros;
 - proteção contra prompt injection;
 - validação dos dados antes da análise;
-- validação básica das respostas;
+- validação dos valores monetários e percentuais gerados pelo LLM;
+- respostas determinísticas para consultas simples;
+- instrumentação de latência, tokens e velocidade de geração;
 - configurações locais por arquivo `.env`;
 - testes automatizados com pytest.
 
@@ -130,13 +132,19 @@ dio-lab-bia-do-futuro/
 │   ├── context_builder.py
 │   ├── data_loader.py
 │   ├── data_validator.py
+│   ├── deterministic_responses.py
 │   ├── exceptions.py
 │   ├── intent_classifier.py
 │   ├── llm_client.py
 │   ├── models.py
 │   ├── orchestrator.py
+│   ├── performance.py
 │   ├── prompts.py
 │   └── response_validator.py
+├── evaluation/
+│   ├── adversarial_cases.json
+│   ├── run_adversarial.py
+│   └── README.md
 ├── tests/
 ├── .env.example
 ├── .gitignore
@@ -209,7 +217,10 @@ As configurações possuem valores padrão, mas podem ser personalizadas por mei
 | `OLLAMA_HOST` | `http://localhost:11434` | Endereço do serviço Ollama. |
 | `OLLAMA_MODEL` | `qwen3:8b` | Modelo local utilizado. |
 | `OLLAMA_TEMPERATURE` | `0.2` | Variabilidade inicial das respostas. |
-| `OLLAMA_TIMEOUT_SECONDS` | `300` | Limite de espera da chamada ao modelo. |
+| `OLLAMA_TIMEOUT_SECONDS` | `120` | Limite de espera da chamada ao modelo. |
+| `OLLAMA_NUM_CTX` | `4096` | Limite da janela de contexto. |
+| `OLLAMA_NUM_PREDICT` | `250` | Máximo de tokens gerados por resposta. |
+| `MAX_USER_MESSAGE_CHARS` | `2000` | Tamanho máximo da mensagem do usuário. |
 | `LOG_LEVEL` | `INFO` | Nível de logs da aplicação. |
 
 Crie o arquivo local a partir do exemplo.
@@ -315,11 +326,21 @@ Os testes automatizados cobrem:
 - classificação de intenção;
 - construção do contexto;
 - filtragem pelo catálogo fechado;
-- validação das respostas;
+- validação das respostas e da fidelidade numérica;
+- respostas determinísticas para intenções simples;
+- instrumentação de performance;
 - fluxo completo do orquestrador com cliente LLM simulado;
 - leitura das configurações padrão e das variáveis de ambiente.
 
 A integração com Ollama deve ser simulada nos testes automatizados. Isso evita depender do modelo local durante a execução da suíte e mantém os resultados rápidos e reproduzíveis.
+
+Os testes adversariais end-to-end usam o modelo real e são executados separadamente:
+
+```bash
+PYTHONPATH=. python evaluation/run_adversarial.py
+```
+
+O relatório é salvo em `evaluation/results/` com intenção, falhas, bloqueios e métricas de performance.
 
 Os testes do `config.py` isolam as variáveis de ambiente com `monkeypatch` e recarregam o módulo quando necessário.
 
@@ -384,9 +405,9 @@ Projeto educacional em desenvolvimento, criado a partir do desafio **BIA do Futu
 
 Próximas etapas:
 
-- validar a aplicação funcional com o modelo local;
-- ampliar os testes de segurança e anti-alucinação;
-- executar a avaliação definida em `docs/04-metricas.md`;
+- executar periodicamente a avaliação adversarial com o modelo local;
+- ampliar o conjunto de casos de segurança e anti-alucinação;
+- consolidar baselines de latência por modelo e hardware;
 - documentar os resultados;
 - produzir o pitch final.
 
