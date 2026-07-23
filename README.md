@@ -1,19 +1,21 @@
 # ClaraMente — Agente de Saúde Financeira Pessoal
 
-A **ClaraMente** é um agente local de Inteligência Artificial desenvolvido para analisar dados financeiros pessoais mockados, explicar padrões de gastos, acompanhar metas e apresentar produtos do catálogo potencialmente compatíveis com o perfil informado.
+A **ClaraMente** é um agente local de Inteligência Artificial desenvolvido para
+analisar dados financeiros pessoais mockados, explicar padrões de gastos,
+acompanhar metas e apresentar produtos de um catálogo fechado potencialmente
+compatíveis com o perfil informado.
 
-O projeto utiliza **Python**, **pandas**, **Streamlit**, **Ollama** e **Qwen3 8B**, com foco em privacidade, rastreabilidade, segurança financeira e redução de alucinações.
+O projeto utiliza **Python**, **pandas**, **Streamlit** e **Ollama**, com foco em
+privacidade, rastreabilidade, segurança financeira e redução de alucinações.
 
 > [!IMPORTANT]
-> Este é um projeto educacional. Todos os dados são fictícios e as respostas não representam recomendação financeira, contábil, jurídica ou de investimentos.
+> Este é um projeto educacional. Todos os dados são fictícios e as respostas
+> não representam recomendação financeira, contábil, jurídica ou de
+> investimentos.
 
 ---
 
 ## Demonstração da interface
-
-A ClaraMente oferece uma interface conversacional em Streamlit para consultar
-dados financeiros fictícios, acompanhar metas e explorar produtos de um
-catálogo fechado.
 
 ### Visão geral
 
@@ -31,40 +33,43 @@ catálogo fechado.
 
 ## Objetivo
 
-A ClaraMente transforma dados financeiros estruturados em explicações claras e contextualizadas.
+A ClaraMente transforma dados financeiros estruturados em explicações claras e
+contextualizadas.
 
 A aplicação pode:
 
 - analisar receitas, despesas e saldo;
-- identificar categorias com maior concentração de gastos;
+- identificar as categorias com maior e menor concentração de gastos;
 - comparar períodos quando houver dados suficientes;
 - acompanhar metas financeiras;
 - recuperar temas do histórico de atendimento;
-- avaliar a compatibilidade entre o perfil mockado e os produtos disponíveis;
+- avaliar produtos do catálogo conforme o perfil mockado;
 - indicar limitações, inconsistências e dados ausentes;
-- explicar os critérios utilizados em cada resposta.
+- explicar fontes, critérios e métricas utilizados em cada resposta.
 
-Os cálculos são realizados de forma determinística por Python e pandas. O modelo de linguagem recebe os resultados já calculados e é responsável por interpretá-los e apresentá-los em linguagem natural.
+Os cálculos são realizados de forma determinística por Python e pandas.
+Consultas simples usam respostas determinísticas; o modelo local é reservado
+para consultas em que a interpretação em linguagem natural agrega valor.
 
 ---
 
-## Principais Características
+## Principais características
 
-- execução local do LLM com Ollama;
-- modelo principal Qwen3 8B;
+- execução local com Ollama;
+- modelo configurável por `.env`;
+- `qwen3:4b` recomendado para o hardware avaliado;
 - interface conversacional com Streamlit;
 - dados estruturados em CSV e JSON;
-- classificação inicial de intenção por regras;
+- classificação de intenção por regras;
 - seleção dinâmica das fontes necessárias;
+- respostas determinísticas para consultas simples;
 - cálculos financeiros fora do LLM;
-- catálogo fechado de produtos financeiros;
+- catálogo fechado de produtos;
 - proteção contra prompt injection;
 - validação dos dados antes da análise;
-- validação dos valores monetários e percentuais gerados pelo LLM;
-- respostas determinísticas para consultas simples;
+- validação de valores monetários e percentuais gerados pelo LLM;
 - instrumentação de latência, tokens e velocidade de geração;
-- configurações locais por arquivo `.env`;
-- testes automatizados com pytest.
+- testes unitários e avaliação adversarial end-to-end.
 
 ---
 
@@ -78,23 +83,25 @@ flowchart TD
     I --> C[Construtor de contexto]
     C --> D[Carregamento e validação dos dados]
     C --> A[Cálculos com Python e pandas]
-    D --> P[Prompt estruturado]
-    A --> P
-    P --> L[Ollama + Qwen3 8B]
+    A --> R{Resposta simples?}
+    D --> R
+    R -->|Sim| T[Resposta determinística]
+    R -->|Não| P[Prompt estruturado]
+    P --> L[Ollama + modelo configurado]
     L --> V[Validação da resposta]
+    T --> S
     V --> S
 ```
 
-### Separação de responsabilidades
-
 | Camada | Responsabilidade |
 |---|---|
-| Streamlit | Interface, histórico da conversa e apresentação das respostas. |
+| Streamlit | Interface, histórico e apresentação das respostas. |
 | Python e pandas | Leitura, validação, filtros, agregações e cálculos. |
-| Orquestração | Classificação da intenção, escolha das fontes e montagem do contexto. |
-| Ollama | Execução local do modelo de linguagem. |
-| Qwen3 8B | Interpretação da solicitação e geração da resposta textual. |
-| Validação | Verificações de segurança, coerência e uso do catálogo autorizado. |
+| Orquestração | Classificação, seleção de fontes e escolha do fluxo. |
+| Respostas determinísticas | Atendimento imediato de consultas simples. |
+| Ollama | Execução local do modelo configurado. |
+| Validação | Segurança, catálogo autorizado e fidelidade numérica. |
+| Performance | Coleta de latência, tokens e velocidade de geração. |
 
 ---
 
@@ -102,50 +109,46 @@ flowchart TD
 
 | Tecnologia | Utilização |
 |---|---|
-| [Python](https://www.python.org/) | Linguagem principal do projeto. |
-| [pandas](https://pandas.pydata.org/) | Processamento e análise dos dados estruturados. |
-| [Streamlit](https://streamlit.io/) | Interface web conversacional. |
-| [Ollama](https://ollama.com/) | Execução local do modelo de linguagem. |
-| [Qwen3 8B](https://ollama.com/library/qwen3:8b) | Modelo responsável pela geração das respostas. |
-| [python-dotenv](https://pypi.org/project/python-dotenv/) | Carregamento das configurações locais do arquivo `.env`. |
-| [pytest](https://docs.pytest.org/) | Testes automatizados. |
-| [Ruff](https://docs.astral.sh/ruff/) | Verificação de qualidade e padronização do código. |
+| Python | Linguagem principal. |
+| pandas | Processamento e análise dos dados. |
+| Streamlit | Interface web conversacional. |
+| Ollama | Execução local do modelo. |
+| Qwen3 4B | Modelo padrão recomendado para o hardware avaliado. |
+| python-dotenv | Carregamento do arquivo `.env`. |
+| pytest | Testes automatizados. |
+| Ruff | Análise estática e padronização. |
 
 ---
 
-## Base de Conhecimento
+## Base de conhecimento
 
 A aplicação utiliza quatro arquivos mockados da pasta [`data/`](data/):
 
 | Arquivo | Finalidade |
 |---|---|
-| [`transacoes.csv`](data/transacoes.csv) | Histórico fictício de receitas e despesas. |
-| [`historico_atendimento.csv`](data/historico_atendimento.csv) | Interações anteriores do cenário educacional. |
-| [`perfil_investidor.json`](data/perfil_investidor.json) | Perfil, objetivos, metas e tolerância a risco. |
-| [`produtos_financeiros.json`](data/produtos_financeiros.json) | Catálogo fechado de produtos disponíveis. |
+| `transacoes.csv` | Receitas e despesas fictícias. |
+| `historico_atendimento.csv` | Interações anteriores do cenário educacional. |
+| `perfil_investidor.json` | Perfil, objetivos, metas e tolerância a risco. |
+| `produtos_financeiros.json` | Catálogo fechado de produtos. |
 
-Os arquivos originais não são modificados. Conversões, filtros e agregações são realizados somente em memória.
+Os arquivos originais não são modificados. Conversões, filtros e agregações
+ocorrem somente em memória.
 
 ---
 
-## Estrutura do Projeto
+## Estrutura do projeto
 
 ```text
 dio-lab-bia-do-futuro/
 ├── data/
-│   ├── historico_atendimento.csv
-│   ├── perfil_investidor.json
-│   ├── produtos_financeiros.json
-│   └── transacoes.csv
 ├── docs/
-│   ├── 01-documentacao-agente.md
-│   ├── 02-base-conhecimento.md
-│   ├── 03-prompts.md
-│   ├── 04-metricas.md
-│   └── 05-pitch.md
+│   └── images/
+├── evaluation/
+│   ├── README.md
+│   ├── adversarial_cases.json
+│   └── run_adversarial.py
 ├── src/
 │   ├── README.md
-│   ├── __init__.py
 │   ├── analytics.py
 │   ├── app.py
 │   ├── config.py
@@ -161,20 +164,12 @@ dio-lab-bia-do-futuro/
 │   ├── performance.py
 │   ├── prompts.py
 │   └── response_validator.py
-├── evaluation/
-│   ├── adversarial_cases.json
-│   ├── run_adversarial.py
-│   └── README.md
 ├── tests/
 ├── .env.example
-├── .gitignore
-├── pytest.ini
 ├── requirements.txt
 ├── requirements-dev.txt
 └── README.md
 ```
-
-A descrição detalhada dos módulos está em [`src/README.md`](src/README.md).
 
 ---
 
@@ -183,226 +178,152 @@ A descrição detalhada dos módulos está em [`src/README.md`](src/README.md).
 - Python 3.11 ou superior;
 - Ollama instalado e em execução;
 - Git;
-- memória suficiente para executar o modelo `qwen3:8b`.
+- memória suficiente para o modelo escolhido.
+
+Para o hardware avaliado, use inicialmente `qwen3:4b`.
 
 ---
 
 ## Instalação
 
-### 1. Clone o repositório
-
 ```bash
 git clone https://github.com/Breno3B/dio-lab-bia-do-futuro.git
 cd dio-lab-bia-do-futuro
-```
 
-### 2. Crie e ative um ambiente virtual
-
-Linux ou macOS:
-
-```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
+
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+
+ollama pull qwen3:4b
 ```
 
-Windows PowerShell:
-
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-```
-
-### 3. Instale as dependências
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Baixe o modelo local
-
-```bash
-ollama pull qwen3:8b
-```
-
-Certifique-se de que o Ollama esteja em execução antes de iniciar a aplicação.
-
----
-
-## Configuração
-
-As configurações possuem valores padrão, mas podem ser personalizadas por meio de um arquivo `.env` na raiz.
-
-| Variável | Valor padrão | Descrição |
-|---|---|---|
-| `OLLAMA_HOST` | `http://localhost:11434` | Endereço do serviço Ollama. |
-| `OLLAMA_MODEL` | `qwen3:8b` | Modelo local utilizado. |
-| `OLLAMA_TEMPERATURE` | `0.2` | Variabilidade inicial das respostas. |
-| `OLLAMA_TIMEOUT_SECONDS` | `120` | Limite de espera da chamada ao modelo. |
-| `OLLAMA_NUM_CTX` | `4096` | Limite da janela de contexto. |
-| `OLLAMA_NUM_PREDICT` | `250` | Máximo de tokens gerados por resposta. |
-| `MAX_USER_MESSAGE_CHARS` | `2000` | Tamanho máximo da mensagem do usuário. |
-| `LOG_LEVEL` | `INFO` | Nível de logs da aplicação. |
-
-Crie o arquivo local a partir do exemplo.
-
-Linux ou macOS:
+Crie o arquivo local de configuração:
 
 ```bash
 cp .env.example .env
 ```
 
-Windows PowerShell:
+---
 
-```powershell
-Copy-Item .env.example .env
+## Configuração
+
+O código possui padrões internos e o `.env.example` documenta a configuração
+recomendada para o hardware avaliado.
+
+| Variável | Padrão interno | Finalidade |
+|---|---:|---|
+| `OLLAMA_HOST` | `http://localhost:11434` | Endereço do Ollama. |
+| `OLLAMA_MODEL` | `qwen3:4b` | Modelo local. |
+| `OLLAMA_TEMPERATURE` | `0.2` | Variabilidade das respostas. |
+| `OLLAMA_TIMEOUT_SECONDS` | `180` | Limite de espera em segundos. |
+| `OLLAMA_NUM_CTX` | `4096` | Janela máxima de contexto. |
+| `OLLAMA_NUM_PREDICT` | `250` | Máximo de tokens da resposta. |
+| `MAX_USER_MESSAGE_CHARS` | `2000` | Tamanho máximo da pergunta. |
+| `LOG_LEVEL` | `INFO` | Nível dos logs. |
+
+Os três limites abaixo são validados como inteiros maiores que zero:
+
+```text
+OLLAMA_NUM_CTX
+OLLAMA_NUM_PREDICT
+MAX_USER_MESSAGE_CHARS
 ```
 
-O `src/config.py` carrega automaticamente o arquivo `.env` com `python-dotenv`. Variáveis definidas diretamente no sistema têm prioridade e não são sobrescritas.
-
-O `.env` não deve ser enviado ao GitHub. O `.gitignore` mantém esse arquivo fora do versionamento, enquanto `.env.example` permanece no repositório como documentação.
+Variáveis do sistema têm prioridade sobre o `.env`, pois o carregamento usa
+`python-dotenv` com `override=False`.
 
 ---
 
-## Como Executar
-
-O arquivo `src/app.py` utiliza imports absolutos a partir do pacote `src`.
-Por isso, execute o Streamlit a partir da raiz do projeto e inclua essa raiz
-no caminho de importação do Python.
+## Como executar
 
 Linux ou macOS:
 
 ```bash
-PYTHONPATH=. streamlit run src/app.py
+PYTHONPATH=. python -m streamlit run src/app.py
 ```
 
 Windows PowerShell:
 
 ```powershell
 $env:PYTHONPATH = "."
-streamlit run src/app.py
+python -m streamlit run src/app.py
 ```
 
-Windows Prompt de Comando:
-
-```cmd
-set PYTHONPATH=.
-streamlit run src/app.py
-```
-
-O Streamlit exibirá o endereço local da aplicação, normalmente:
+A interface normalmente será aberta em:
 
 ```text
 http://localhost:8501
 ```
 
-> [!NOTE]
-> A variável `PYTHONPATH` definida dessa forma vale somente para a sessão atual
-> do terminal. Ela não precisa ser adicionada ao arquivo `.env`.
-
 ---
 
-## Exemplos de Perguntas
+## Exemplos de perguntas
 
 - Qual é o meu saldo no período?
+- Quanto entrou e quanto saiu?
 - Em que categoria estou gastando mais?
+- Com o que eu menos gasto?
 - Como está minha reserva de emergência?
-- Quais produtos da base são potencialmente compatíveis com meu objetivo?
+- Quais produtos do catálogo são compatíveis com meu perfil?
 - Já falei anteriormente sobre reserva de emergência?
 - Meus gastos aumentaram em relação ao período anterior?
 
 ---
 
-## Testes e Qualidade
+## Testes e qualidade
 
 Instale as dependências de desenvolvimento:
 
 ```bash
-pip install -r requirements-dev.txt
+python -m pip install -r requirements-dev.txt
 ```
 
-Execute os testes automatizados:
+Execute:
 
 ```bash
 pytest
-```
-
-Execute os testes com relatório de cobertura:
-
-```bash
 pytest --cov=src --cov-report=term-missing
-```
-
-Execute a análise estática:
-
-```bash
 ruff check .
 ```
 
-Os testes automatizados cobrem:
+Os testes automatizados simulam o cliente Ollama para permanecerem rápidos e
+reproduzíveis.
 
-- carregamento dos arquivos CSV e JSON;
-- validação da estrutura e consistência dos dados;
-- cálculos financeiros determinísticos;
-- classificação de intenção;
-- construção do contexto;
-- filtragem pelo catálogo fechado;
-- validação das respostas e da fidelidade numérica;
-- respostas determinísticas para intenções simples;
-- instrumentação de performance;
-- fluxo completo do orquestrador com cliente LLM simulado;
-- leitura das configurações padrão e das variáveis de ambiente.
-
-A integração com Ollama deve ser simulada nos testes automatizados. Isso evita depender do modelo local durante a execução da suíte e mantém os resultados rápidos e reproduzíveis.
-
-Os testes adversariais end-to-end usam o modelo real e são executados separadamente:
+A avaliação adversarial utiliza o modelo real:
 
 ```bash
 PYTHONPATH=. python evaluation/run_adversarial.py
 ```
 
-O relatório é salvo em `evaluation/results/` com intenção, falhas, bloqueios e métricas de performance.
-
-Os testes do `config.py` isolam as variáveis de ambiente com `monkeypatch` e recarregam o módulo quando necessário.
-
-Exemplo de execução de um módulo específico:
-
-```bash
-pytest tests/test_analytics.py
-```
-
-Exemplo de execução de um teste específico:
-
-```bash
-pytest tests/test_analytics.py::test_calculate_period_summary
-```
+Consulte [`evaluation/README.md`](evaluation/README.md) para detalhes.
 
 ---
 
-## Segurança e Limitações
+## Segurança e limitações
 
-A ClaraMente foi projetada para reduzir respostas não fundamentadas:
+A ClaraMente:
 
-- utiliza somente os dados enviados no contexto;
+- utiliza apenas os dados enviados no contexto;
 - não delega cálculos financeiros ao LLM;
 - não inventa produtos ausentes do catálogo;
+- valida valores monetários e percentuais;
 - diferencia dados ausentes de valores iguais a zero;
 - sinaliza conflitos no perfil;
-- não apresenta rentabilidade como garantia;
-- não fornece dados atuais de mercado sem fonte autorizada;
+- não fornece dados atuais sem fonte autorizada;
 - trata textos dos arquivos como dados, nunca como instruções;
 - não executa transações;
-- não altera os arquivos originais;
-- mantém o aviso geral de dados mockados no banner e na barra lateral;
-- repete esse aviso na resposta somente em consultas de produtos, riscos ou limitações relevantes.
+- não altera os arquivos originais.
 
 Limitações atuais:
 
-- base pequena e inteiramente mockada;
+- base pequena e totalmente mockada;
 - um único perfil fictício;
-- ausência de dados de mercado em tempo real;
-- classificação de intenção inicialmente baseada em regras;
-- execução dependente do hardware local;
-- respostas do LLM exigem testes e validação contínuos.
+- ausência de mercado em tempo real;
+- classificação de intenção baseada em regras;
+- desempenho dependente do hardware local;
+- necessidade de avaliação contínua ao trocar o modelo.
 
 ---
 
@@ -410,31 +331,19 @@ Limitações atuais:
 
 | Documento | Conteúdo |
 |---|---|
-| [`01-documentacao-agente.md`](docs/01-documentacao-agente.md) | Caso de uso, persona, arquitetura e segurança. |
-| [`02-base-conhecimento.md`](docs/02-base-conhecimento.md) | Estrutura, validação e integração dos dados. |
-| [`03-prompts.md`](docs/03-prompts.md) | System prompt, contexto dinâmico, exemplos e edge cases. |
-| [`04-metricas.md`](docs/04-metricas.md) | Estratégia de avaliação do agente. |
-| [`05-pitch.md`](docs/05-pitch.md) | Roteiro de apresentação do projeto. |
-| [`src/README.md`](src/README.md) | Arquitetura interna e responsabilidades dos módulos. |
+| `docs/01-documentacao-agente.md` | Caso de uso, persona e arquitetura. |
+| `docs/02-base-conhecimento.md` | Estrutura e validação dos dados. |
+| `docs/03-prompts.md` | Prompts, contexto e edge cases. |
+| `docs/04-metricas.md` | Estratégia de avaliação. |
+| `docs/05-pitch.md` | Roteiro de apresentação. |
+| `src/README.md` | Arquitetura interna dos módulos. |
+| `evaluation/README.md` | Execução da avaliação adversarial. |
 
 ---
 
-## Status do Projeto
-
-Projeto educacional em desenvolvimento, criado a partir do desafio **BIA do Futuro**, da Digital Innovation One.
-
-Próximas etapas:
-
-- executar periodicamente a avaliação adversarial com o modelo local;
-- ampliar o conjunto de casos de segurança e anti-alucinação;
-- consolidar baselines de latência por modelo e hardware;
-- documentar os resultados;
-- produzir o pitch final.
-
----
-
-## Autoria e Origem
+## Autoria e origem
 
 Projeto desenvolvido por [Breno3B](https://github.com/Breno3B).
 
-Este repositório foi criado a partir do projeto educacional [`digitalinnovationone/dio-lab-bia-do-futuro`](https://github.com/digitalinnovationone/dio-lab-bia-do-futuro).
+Criado a partir do desafio educacional
+[`digitalinnovationone/dio-lab-bia-do-futuro`](https://github.com/digitalinnovationone/dio-lab-bia-do-futuro).

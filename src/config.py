@@ -70,7 +70,7 @@ class Settings:
         )
     )
     ollama_model: str = field(
-        default_factory=lambda: _get_str_env("OLLAMA_MODEL", "qwen3:8b")
+        default_factory=lambda: _get_str_env("OLLAMA_MODEL", "qwen3:4b")
     )
     ollama_temperature: float = field(
         default_factory=lambda: _get_float_env("OLLAMA_TEMPERATURE", 0.2)
@@ -78,7 +78,7 @@ class Settings:
     ollama_timeout_seconds: float = field(
         default_factory=lambda: _get_float_env(
             "OLLAMA_TIMEOUT_SECONDS",
-            120.0,
+            180.0,
         )
     )
     ollama_num_ctx: int = field(
