@@ -245,7 +245,7 @@ Entre os cálculos previstos estão:
 - percentual de progresso de uma meta;
 - filtragem de produtos por risco, aporte mínimo e finalidade declarada.
 
-O **Qwen3 8B**, executado localmente pelo **Ollama**, recebe os resultados já calculados e os transforma em uma explicação acessível.
+O **Qwen3 4B**, executado localmente pelo **Ollama**, recebe os resultados já calculados e os transforma em uma explicação acessível.
 
 Essa separação de responsabilidades reduz erros porque:
 
@@ -297,7 +297,7 @@ flowchart TD
     D --> E[Seleção das fontes relevantes]
     E --> F[Cálculos com Python e pandas]
     F --> G[Contexto estruturado e reduzido]
-    G --> H[Ollama + Qwen3 8B]
+    G --> H[Ollama + Qwen3 4B]
     H --> I[Validação da resposta]
     I --> J[Resposta da ClaraMente]
 ```

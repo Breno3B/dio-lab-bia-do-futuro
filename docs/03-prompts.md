@@ -605,7 +605,7 @@ Moradia: R$ 500,00
 
 | Parâmetro | Valor inicial | Motivo |
 |---|---:|---|
-| Modelo | `qwen3:8b` | Modelo local principal definido para o projeto. |
+| Modelo | `qwen3:4b` | Modelo local principal definido para o projeto. |
 | Executor | Ollama | Disponibiliza o modelo localmente para a aplicação Python. |
 | Temperatura | `0.2` | Reduz variação e favorece respostas mais consistentes. |
 | Idioma | Português do Brasil | Idioma padrão da ClaraMente. |

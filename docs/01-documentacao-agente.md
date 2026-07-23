@@ -120,7 +120,7 @@ flowchart TD
 
     C --> F[Construção do contexto]
     F --> G[Ollama]
-    G --> G1[Qwen3 8B]
+    G --> G1[Qwen3 4B]
 
     G1 --> H[Validação da resposta]
     H -->|Resposta válida| I[Resposta ao cliente]
@@ -137,8 +137,8 @@ flowchart TD
 3. Os arquivos relevantes são carregados e validados pela aplicação.
 4. Python e pandas executam filtros, agregações e cálculos financeiros de forma determinística.
 5. A aplicação monta um contexto estruturado contendo apenas os dados e resultados necessários para a pergunta atual.
-6. O Ollama disponibiliza localmente o modelo Qwen3 8B para geração da resposta.
-7. O Qwen3 8B interpreta a solicitação e transforma os resultados calculados em uma explicação acessível, seguindo o system prompt e as restrições de segurança.
+6. O Ollama disponibiliza localmente o modelo Qwen3 4B para geração da resposta.
+7. O Qwen3 4B interpreta a solicitação e transforma os resultados calculados em uma explicação acessível, seguindo o system prompt e as restrições de segurança.
 8. A resposta passa por validações para verificar se está fundamentada, coerente com o perfil e dentro do escopo permitido.
 9. A aplicação entrega a resposta ao cliente ou informa que os dados são insuficientes.
 
@@ -150,7 +150,7 @@ flowchart TD
 | Camada de orquestração | [Python](https://www.python.org/) | Controla o fluxo da aplicação, identifica a intenção do usuário, seleciona os dados relevantes e monta o contexto enviado ao modelo. |
 | Processamento de dados | [pandas](https://pandas.pydata.org/) | Realiza a leitura, transformação, filtragem e análise dos dados financeiros. |
 | Executor local do LLM | [Ollama](https://ollama.com/) | Executa o modelo de linguagem localmente e disponibiliza uma API para integração com a aplicação. |
-| Modelo de linguagem | [Qwen3 8B](https://ollama.com/library/qwen3:8b) | Interpreta a solicitação e gera respostas em linguagem natural a partir do contexto estruturado fornecido pela aplicação. |
+| Modelo de linguagem | [Qwen3 4B](https://ollama.com/library/qwen3:4b) | Interpreta a solicitação e gera respostas em linguagem natural a partir do contexto estruturado fornecido pela aplicação. |
 | Base de conhecimento | [CSV](https://www.rfc-editor.org/rfc/rfc4180) e [JSON](https://www.json.org/json-en.html) | Armazena dados mockados de transações, histórico de atendimento, perfil do investidor e produtos financeiros disponíveis, utilizados exclusivamente para fins educacionais e de demonstração. |
 | Construção de contexto | [Python](https://www.python.org/) | Seleciona somente as informações relevantes para cada pergunta, reduzindo ruído e o risco de respostas não fundamentadas. |
 | Regras de negócio | [Python](https://www.python.org/) | Aplica critérios determinísticos, como compatibilidade com o perfil do investidor, dados mínimos necessários e limites das orientações. |
@@ -161,16 +161,16 @@ flowchart TD
 
 | Arquivo | Uso pelo agente |
 |---------|-----------------|
-| [`transacoes.csv`](../transacoes.csv) | Analisar padrões, categorias, valores, recorrências e possíveis alterações no comportamento de gastos. |
-| [`historico_atendimento.csv`](../historico_atendimento.csv) | Recuperar dúvidas, solicitações e orientações anteriores relevantes para manter continuidade no atendimento. |
-| [`perfil_investidor.json`](../perfil_investidor.json) | Identificar tolerância a risco, preferências, objetivos e restrições que devem ser respeitadas. |
-| [`produtos_financeiros.json`](../produtos_financeiros.json) | Consultar os produtos efetivamente disponíveis e suas características, sem inventar alternativas fora do catálogo. |
+| [`transacoes.csv`](../data/transacoes.csv) | Analisar padrões, categorias, valores, recorrências e possíveis alterações no comportamento de gastos. |
+| [`historico_atendimento.csv`](../data/historico_atendimento.csv) | Recuperar dúvidas, solicitações e orientações anteriores relevantes para manter continuidade no atendimento. |
+| [`perfil_investidor.json`](../data/perfil_investidor.json) | Identificar tolerância a risco, preferências, objetivos e restrições que devem ser respeitadas. |
+| [`produtos_financeiros.json`](../data/produtos_financeiros.json) | Consultar os produtos efetivamente disponíveis e suas características, sem inventar alternativas fora do catálogo. |
 
 ### Separação de Responsabilidades
 
 - **Python e pandas:** carregamento dos arquivos, validação dos dados, filtros, cálculos, agregações e aplicação das regras de negócio.
 - **Ollama:** execução local do modelo e disponibilização da API utilizada pela aplicação.
-- **Qwen3 8B:** interpretação da solicitação e geração da explicação em linguagem natural.
+- **Qwen3 4B:** interpretação da solicitação e geração da explicação em linguagem natural.
 - **Streamlit:** interação com o usuário e apresentação dos resultados.
 
 Essa separação evita que o modelo de linguagem seja tratado como fonte de verdade para cálculos financeiros. Os valores devem ser produzidos pelo código; o modelo deve interpretá-los e explicá-los.
