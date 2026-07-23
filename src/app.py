@@ -148,7 +148,12 @@ def main() -> None:
                 response = answer_user_message(user_message, knowledge_base, llm_client)
             st.markdown(response.content)
             render_context_details(response)
-            st.session_state.messages.append({"role": "assistant", "content": response.content})
+            st.session_state.messages.append(
+                {
+                "role": "assistant",
+                "content": response.content,
+                }
+            )
         except LLMUnavailableError as exc:
             logger.warning("Ollama indisponível: %s", exc)
             st.error(str(exc))
