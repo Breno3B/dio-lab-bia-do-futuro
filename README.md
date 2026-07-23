@@ -231,8 +231,7 @@ OLLAMA_NUM_PREDICT
 MAX_USER_MESSAGE_CHARS
 ```
 
-Variáveis do sistema têm prioridade sobre o `.env`, pois o carregamento usa
-`python-dotenv` com `override=False`.
+O `.env` fornece a configuração local quando a variável não está definida no ambiente. Variáveis fornecidas pelo terminal, sistema operacional ou infraestrutura têm prioridade porque o carregamento do `python-dotenv` utiliza `override=False`.
 
 ---
 
