@@ -30,6 +30,25 @@ def _get_float_env(name: str, default: float) -> float:
         ) from exc
 
 
+
+def _get_int_env(name: str, default: int) -> int:
+    """Obtém uma variável inteira positiva do ambiente."""
+    raw_value = os.getenv(name)
+    if raw_value is None or not raw_value.strip():
+        return default
+
+    try:
+        value = int(raw_value)
+    except ValueError as exc:
+        raise ValueError(
+            f"A variável de ambiente {name} deve conter um número inteiro válido."
+        ) from exc
+
+    if value <= 0:
+        raise ValueError(f"A variável de ambiente {name} deve ser maior que zero.")
+    return value
+
+
 def _get_str_env(name: str, default: str) -> str:
     """Obtém uma variável textual, ignorando valores vazios."""
     raw_value = os.getenv(name)
@@ -61,6 +80,15 @@ class Settings:
             "OLLAMA_TIMEOUT_SECONDS",
             120.0,
         )
+    )
+    ollama_num_ctx: int = field(
+        default_factory=lambda: _get_int_env("OLLAMA_NUM_CTX", 4096)
+    )
+    ollama_num_predict: int = field(
+        default_factory=lambda: _get_int_env("OLLAMA_NUM_PREDICT", 250)
+    )
+    max_user_message_chars: int = field(
+        default_factory=lambda: _get_int_env("MAX_USER_MESSAGE_CHARS", 2000)
     )
     log_level: str = field(
         default_factory=lambda: _get_str_env("LOG_LEVEL", "INFO").upper()

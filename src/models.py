@@ -85,3 +85,4 @@ class AgentResponse:
     intent: Intent
     context: AgentContext
     warnings: list[str] = field(default_factory=list)
+    performance_metrics: dict[str, Any] = field(default_factory=dict)

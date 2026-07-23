@@ -119,6 +119,56 @@ def _validate_catalog(
     return errors
 
 
+
+def _parse_decimal_pt_br(value: str) -> float:
+    normalized = value.strip().replace(".", "").replace(",", ".")
+    return float(normalized)
+
+
+def _collect_allowed_numbers(value: Any) -> list[float]:
+    numbers: list[float] = []
+    if isinstance(value, bool) or value is None:
+        return numbers
+    if isinstance(value, (int, float)):
+        numbers.append(float(value))
+        return numbers
+    if isinstance(value, dict):
+        for item in value.values():
+            numbers.extend(_collect_allowed_numbers(item))
+        return numbers
+    if isinstance(value, list):
+        for item in value:
+            numbers.extend(_collect_allowed_numbers(item))
+        return numbers
+    if isinstance(value, str):
+        for match in re.finditer(r"(?<!\w)(\d+(?:[.,]\d+)?)\s*%", value):
+            numbers.append(float(match.group(1).replace(",", ".")))
+    return numbers
+
+
+def _extract_financial_numbers(content: str) -> list[tuple[str, float, str]]:
+    mentions: list[tuple[str, float, str]] = []
+    occupied: list[tuple[int, int]] = []
+    for match in re.finditer(r"R\$\s*(\d{1,3}(?:\.\d{3})*(?:,\d{1,2})|\d+(?:,\d{1,2})?)", content):
+        mentions.append(("monetário", _parse_decimal_pt_br(match.group(1)), match.group(0)))
+        occupied.append(match.span())
+    for match in re.finditer(r"(?<![\w])([0-9]+(?:[.,][0-9]+)?)\s*%", content):
+        if any(start <= match.start() < end for start, end in occupied):
+            continue
+        mentions.append(("percentual", float(match.group(1).replace(",", ".")), match.group(0)))
+    return mentions
+
+
+def _validate_numeric_grounding(content: str, context: AgentContext) -> list[str]:
+    allowed = _collect_allowed_numbers(context.to_dict())
+    errors: list[str] = []
+    for kind, value, original in _extract_financial_numbers(content):
+        if not any(abs(value - candidate) <= 0.011 for candidate in allowed):
+            errors.append(
+                f"A resposta contém valor {kind} não fundamentado no contexto: '{original}'."
+            )
+    return errors
+
 def validate_response(response: str, context: AgentContext) -> ResponseValidation:
     """Valida a saída do LLM e classifica violações críticas."""
     raw_response = response.strip()
@@ -150,6 +200,8 @@ def validate_response(response: str, context: AgentContext) -> ResponseValidatio
             result.critical_errors.append(
                 f"A resposta contém expressão de risco: '{pattern}'."
             )
+
+    result.critical_errors.extend(_validate_numeric_grounding(content, context))
 
     if context.intent is Intent.PRODUCT_COMPATIBILITY:
         result.critical_errors.extend(

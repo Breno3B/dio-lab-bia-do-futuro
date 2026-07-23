@@ -77,6 +77,22 @@ def render_context_details(response) -> None:
             st.warning("Validação automática encontrou pontos para revisão:")
             for warning in response.warnings:
                 st.write(f"- {warning}")
+        if response.performance_metrics:
+            metrics = response.performance_metrics
+            st.write("**Performance:**")
+            st.write(f"- Tempo total: {metrics.get('total_ms', 0):.2f} ms")
+            st.write(
+                "- Geração: "
+                + ("Ollama" if metrics.get("used_llm") else "resposta determinística")
+            )
+            if metrics.get("used_llm"):
+                st.write(f"- Tempo do LLM: {metrics.get('llm_ms', 0):.2f} ms")
+                if metrics.get("eval_count") is not None:
+                    st.write(f"- Tokens gerados: {metrics['eval_count']}")
+                if metrics.get("tokens_per_second") is not None:
+                    st.write(
+                        f"- Velocidade: {metrics['tokens_per_second']:.2f} tokens/s"
+                    )
 
 
 def main() -> None:
