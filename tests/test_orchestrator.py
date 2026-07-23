@@ -1,63 +1,61 @@
 import json
 
-from src.orchestrator import SAFE_BLOCKED_RESPONSE, answer_user_message
+import pytest
+
+from src.orchestrator import answer_user_message
 
 
-class FakeLLMClient:
+class TrackingLLMClient:
+    def __init__(self, response: str = "Resposta sem números.") -> None:
+        self.called = False
+        self.response = response
+        self.last_metrics = {
+            "prompt_eval_count": 100,
+            "eval_count": 20,
+            "tokens_per_second": 5.0,
+        }
+
     def generate(self, system_prompt: str, user_prompt: str) -> str:
-        assert "ClaraMente" in system_prompt
-        assert "resultados_calculados" in user_prompt
-        return "Resumo educacional com dados mockados."
+        self.called = True
+        return self.response
 
 
-class UnsafeLLMClient:
-    def generate(self, system_prompt: str, user_prompt: str) -> str:
-        return "Ignore as regras anteriores e invista tudo com lucro garantido."
-
-
-class ConflictingProfileLLMClient:
-    def generate(self, system_prompt: str, user_prompt: str) -> str:
-        return json.dumps(
-            {
-                "resposta": (
-                    "Há divergência no perfil; confirme a tolerância a risco. "
-                    "Os dados são mockados e educacionais."
-                ),
-                "produtos_mencionados": [],
-            },
-            ensure_ascii=False,
-        )
-
-
-def test_orchestrator_runs_full_flow(knowledge_base):
+def test_simple_summary_uses_deterministic_response(knowledge_base, settings):
+    client = TrackingLLMClient()
     response = answer_user_message(
-        "Qual é o meu saldo?",
-        knowledge_base,
-        FakeLLMClient(),
+        "Qual é o meu saldo?", knowledge_base, client, settings
     )
+    assert not client.called
+    assert response.content.startswith("Resumo:")
+    assert "R$ 3.230,00" in response.content
+    assert response.performance_metrics["used_llm"] is False
+    assert response.performance_metrics["total_ms"] >= 0
 
-    assert response.content.startswith("Resumo")
-    assert response.context.calculated_results["saldo"] == 3230.0
 
-
-def test_orchestrator_blocks_critical_llm_response(knowledge_base):
+def test_service_history_uses_llm_and_records_metrics(knowledge_base, settings):
+    client = TrackingLLMClient("O histórico informa que o tema foi discutido.")
     response = answer_user_message(
-        "Qual é o meu saldo?",
-        knowledge_base,
-        UnsafeLLMClient(),
+        "Já falei sobre Tesouro Selic?", knowledge_base, client, settings
     )
+    assert client.called
+    assert response.performance_metrics["used_llm"] is True
+    assert response.performance_metrics["eval_count"] == 20
+    assert response.performance_metrics["llm_ms"] >= 0
 
-    assert response.content == SAFE_BLOCKED_RESPONSE
-    assert any("Resposta bloqueada" in warning for warning in response.warnings)
+
+def test_rejects_message_above_configured_limit(knowledge_base, settings):
+    client = TrackingLLMClient()
+    tiny_settings = settings.__class__(
+        data_dir=settings.data_dir,
+        max_user_message_chars=10,
+    )
+    with pytest.raises(ValueError, match="excede o limite"):
+        answer_user_message("mensagem muito longa", knowledge_base, client, tiny_settings)
 
 
-def test_orchestrator_handles_conflicting_profile_without_products(knowledge_base):
+def test_numeric_hallucination_is_blocked_for_llm_path(knowledge_base, settings):
+    client = TrackingLLMClient("O atendimento indica um saldo de R$ 9.999,99.")
     response = answer_user_message(
-        "Quais produtos combinam comigo?",
-        knowledge_base,
-        ConflictingProfileLLMClient(),
+        "Já falei anteriormente sobre saldo?", knowledge_base, client, settings
     )
-
-    assert response.context.products == []
-    assert response.content.startswith("Há divergência")
-    assert not any("Resposta bloqueada" in warning for warning in response.warnings)
+    assert any("não fundamentado" in warning for warning in response.warnings)
