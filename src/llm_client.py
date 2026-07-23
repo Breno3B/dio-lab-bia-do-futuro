@@ -91,7 +91,11 @@ class OllamaLLMClient:
                 stream=False,
                 think=False,
                 keep_alive="10m",
-                options=self._chat_options(),
+                options={
+                    "temperature": self.settings.ollama_temperature,
+                    "num_ctx": self.settings.ollama_num_ctx,
+                    "num_predict": self.settings.ollama_num_predict,
+                },
             )
             self._capture_metrics(response)
             content = response["message"]["content"]
