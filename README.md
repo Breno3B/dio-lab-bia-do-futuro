@@ -9,6 +9,26 @@ O projeto utiliza **Python**, **pandas**, **Streamlit**, **Ollama** e **Qwen3 8B
 
 ---
 
+## Demonstração da interface
+
+A ClaraMente oferece uma interface conversacional em Streamlit para consultar
+dados financeiros fictícios, acompanhar metas e explorar produtos de um
+catálogo fechado.
+
+### Visão geral
+
+![Interface principal da ClaraMente](docs/images/interface-principal.png)
+
+### Resposta financeira
+
+![Resposta de saldo com fontes e período](docs/images/resposta-deterministica.png)
+
+### Métricas e validações
+
+![Detalhes de fontes, validações e performance](docs/images/fontes-e-performance.png)
+
+---
+
 ## Objetivo
 
 A ClaraMente transforma dados financeiros estruturados em explicações claras e contextualizadas.
