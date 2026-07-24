@@ -39,7 +39,7 @@ def _validate_cases(cases: Any) -> list[dict[str, Any]]:
 
     for index, raw_case in enumerate(cases, start=1):
         if not isinstance(raw_case, dict):
-            raise ValueError(f"O caso {index} deve ser um objeto JSON.")
+            raise TypeError(f"O caso {index} deve ser um objeto JSON.")
 
         missing = sorted(required_fields - raw_case.keys())
         if missing:
