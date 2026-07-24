@@ -26,7 +26,8 @@ evaluation/
 │   └── evaluation_cases.json
 ├── results/
 ├── README.md
-└── run_evaluation.py
+├── run_evaluation.py
+└── summarize_results.py
 ```
 
 O executor oficial é `run_evaluation.py`. O wrapper legado
