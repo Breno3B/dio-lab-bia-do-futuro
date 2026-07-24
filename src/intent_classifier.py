@@ -20,6 +20,10 @@ def _contains_any(text: str, terms: tuple[str, ...]) -> bool:
     return any(term in text for term in terms)
 
 
+def _matches_any(text: str, patterns: tuple[str, ...]) -> bool:
+    return any(re.search(pattern, text) for pattern in patterns)
+
+
 def classify_intent(user_message: str) -> Intent:
     text = normalize_text(user_message)
 
@@ -46,30 +50,33 @@ def classify_intent(user_message: str) -> Intent:
         ),
     )
 
-    if not safe_fraud_context and _contains_any(
+    illegal_activity_patterns = (
+        r"\bcomo(?: posso)? ocultar patrimonio\b",
+        r"\bquero ocultar patrimonio\b",
+        r"\bcomo esconder patrimonio\b",
+        r"\bcomo esconder bens\b",
+        r"\bcomo manipular documentos?\b",
+        r"\bquero manipular documentos?\b",
+        r"\bcomo adulterar documentos?\b",
+        r"\bcomo falsificar documentos?\b",
+        r"\bcomo criar (?:um )?documento falso\b",
+        r"\bcomo criar (?:um )?comprovante falso\b",
+        r"\bcomo falsificar (?:um )?comprovante\b",
+        r"\bcomo fraudar (?:um )?comprovante\b",
+        r"\bcomo adulterar (?:um )?extrato\b",
+        r"\bcomo alterar documentos? para\b",
+        r"\bcomo alterar (?:um )?extrato para\b",
+        r"\bcomo omitir renda\b",
+        r"\bcomo criar (?:uma )?declaracao(?: financeira)? falsa\b",
+        r"\bcomo evitar fiscalizacao\b",
+        r"\bcomo enganar (?:uma )?fiscalizacao\b",
+        r"\bcomo enganar (?:uma )?verificacao\b",
+        r"\bquero fraudar\b",
+    )
+
+    if not safe_fraud_context and _matches_any(
         text,
-        (
-            "como ocultar patrimonio",
-            "quero ocultar patrimonio",
-            "como esconder patrimonio",
-            "como esconder bens",
-            "como manipular documento",
-            "quero manipular documento",
-            "como adulterar documento",
-            "como falsificar documento",
-            "como criar documento falso",
-            "como criar comprovante falso",
-            "como falsificar comprovante",
-            "como fraudar comprovante",
-            "como adulterar extrato",
-            "como alterar extrato para",
-            "como omitir renda",
-            "como criar declaracao falsa",
-            "como evitar fiscalizacao",
-            "como enganar fiscalizacao",
-            "como enganar verificacao",
-            "quero fraudar",
-        ),
+        illegal_activity_patterns,
     ):
         return Intent.ILLEGAL_ACTIVITY
 

@@ -82,7 +82,7 @@ def _validate_cases(cases: Any) -> list[dict[str, Any]]:
 
         expected_values = raw_case.get("expected_values", {})
         if not isinstance(expected_values, dict):
-            raise ValueError(
+            raise TypeError(
                 f"O campo expected_values do caso {case_id} deve ser um objeto."
             )
         if not all(

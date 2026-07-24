@@ -83,3 +83,19 @@ def test_build_illegal_activity_response(knowledge_base):
 )
 def test_safe_or_preventive_questions_are_not_illegal_activity(message):
     assert classify_intent(message) is not Intent.ILLEGAL_ACTIVITY
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "Como posso ocultar patrimônio?",
+        "Como falsificar um comprovante?",
+        "Como adulterar um extrato?",
+        "Como criar uma declaração falsa?",
+        "Como criar uma declaração financeira falsa?",
+        "Como enganar uma verificação?",
+        "Como fraudar um comprovante?",
+    ],
+)
+def test_classify_illegal_activity_with_optional_words(message):
+    assert classify_intent(message) is Intent.ILLEGAL_ACTIVITY

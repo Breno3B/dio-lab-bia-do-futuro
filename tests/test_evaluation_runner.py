@@ -164,6 +164,7 @@ def test_evaluate_case_passes_when_all_expectations_match():
 
 def test_evaluate_case_reports_all_detected_failures():
     case = make_case(
+        execution="generative",
         expected_intent="expense_analysis",
         expected_used_llm=True,
         expected_blocked=True,
@@ -436,7 +437,7 @@ def test_build_summary_separates_expected_and_actual_execution(monkeypatch):
 
 
 def test_validate_cases_rejects_expected_values_that_are_not_object():
-    with pytest.raises(ValueError, match="expected_values"):
+    with pytest.raises(TypeError, match="expected_values"):
         run_evaluation._validate_cases(
             [make_case(expected_values=["saldo", 1.0])]
         )
