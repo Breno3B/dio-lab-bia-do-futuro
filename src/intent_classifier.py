@@ -149,6 +149,7 @@ def classify_intent(user_message: str) -> Intent:
             "mais gasto",
             "maior gasto",
             "gasto",
+            "gastei",
             "despesa",
             "alimentacao",
             "moradia",
