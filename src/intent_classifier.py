@@ -28,6 +28,33 @@ def classify_intent(user_message: str) -> Intent:
 
     if _contains_any(
         text,
+        (
+            "ocultar patrimonio",
+            "esconder patrimonio",
+            "esconder bens",
+            "manipular documento",
+            "alterar documento",
+            "adulterar documento",
+            "falsificar documento",
+            "documento falso",
+            "comprovante falso",
+            "falsificar comprovante",
+            "fraudar comprovante",
+            "adulterar extrato",
+            "alterar extrato",
+            "omitir renda",
+            "declaracao falsa",
+            "evitar fiscalizacao",
+            "enganar fiscalizacao",
+            "enganar verificacao",
+            "fraudar",
+            "fraude",
+        ),
+    ):
+        return Intent.ILLEGAL_ACTIVITY
+
+    if _contains_any(
+        text,
         ("tempo amanha", "previsao do tempo", "receita culinaria", "placar", "futebol"),
     ):
         return Intent.OUT_OF_SCOPE

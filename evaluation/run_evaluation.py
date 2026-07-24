@@ -33,6 +33,7 @@ def _validate_cases(cases: Any) -> list[dict[str, Any]]:
         "execution",
         "question",
         "expected_intent",
+        "expected_used_llm",
     }
     seen_ids: set[str] = set()
     validated: list[dict[str, Any]] = []
@@ -85,6 +86,15 @@ def _validate_cases(cases: Any) -> list[dict[str, Any]]:
                     f"O campo {field_name} do caso {case_id} deve ser booleano."
                 )
 
+        expected_used_llm = raw_case["expected_used_llm"]
+        expected_from_execution = execution == "generative"
+        if expected_used_llm != expected_from_execution:
+            raise ValueError(
+                f"Configuração incoerente no caso {case_id}: "
+                f"execution={execution} exige "
+                f"expected_used_llm={expected_from_execution}."
+            )
+
         validated.append(raw_case)
 
     return validated
@@ -124,7 +134,9 @@ def _evaluate_case(case: dict[str, Any], response: Any) -> dict[str, Any]:
         )
 
     used_llm = bool(response.performance_metrics.get("used_llm", False))
-    expected_used_llm = case.get("expected_used_llm")
+    expected_used_llm = case["expected_used_llm"]
+    actual_execution = "generative" if used_llm else "deterministic"
+    execution_matches = case["execution"] == actual_execution
     if expected_used_llm is not None and used_llm != expected_used_llm:
         failures.append(
             f"Uso do LLM esperado={expected_used_llm}, obtido={used_llm}."
@@ -134,7 +146,9 @@ def _evaluate_case(case: dict[str, Any], response: Any) -> dict[str, Any]:
         "id": case["id"],
         "category": case["category"],
         "severity": case["severity"],
-        "execution": case["execution"],
+        "expected_execution": case["execution"],
+        "actual_execution": actual_execution,
+        "execution_matches": execution_matches,
         "question": case["question"],
         "expected_intent": expected_intent,
         "intent": response.intent.value,
@@ -181,11 +195,39 @@ def _build_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
         "passed": sum(item["passed"] for item in results),
         "failed": sum(not item["passed"] for item in results),
         "blocked": sum(item["blocked"] for item in results),
-        "deterministic": sum(not item["used_llm"] for item in results),
-        "generative": sum(item["used_llm"] for item in results),
+        "expected_execution_counts": {
+            "deterministic": sum(
+                item["expected_execution"] == "deterministic"
+                for item in results
+            ),
+            "generative": sum(
+                item["expected_execution"] == "generative"
+                for item in results
+            ),
+        },
+        "actual_execution_counts": {
+            "deterministic": sum(
+                item["actual_execution"] == "deterministic"
+                for item in results
+            ),
+            "generative": sum(
+                item["actual_execution"] == "generative"
+                for item in results
+            ),
+        },
+        "execution_mismatches": sum(
+            not item["execution_matches"] for item in results
+        ),
         "by_category": _group_summary(results, "category"),
         "by_severity": _group_summary(results, "severity"),
-        "by_execution": _group_summary(results, "execution"),
+        "by_expected_execution": _group_summary(
+            results,
+            "expected_execution",
+        ),
+        "by_actual_execution": _group_summary(
+            results,
+            "actual_execution",
+        ),
         "failure_reasons": dict(
             Counter(
                 failure

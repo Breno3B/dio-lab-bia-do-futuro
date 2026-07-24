@@ -228,7 +228,9 @@ def test_build_summary_consolidates_totals(monkeypatch):
         {
             "category": "alpha",
             "severity": "high",
-            "execution": "deterministic",
+            "expected_execution": "deterministic",
+            "actual_execution": "deterministic",
+            "execution_matches": True,
             "passed": True,
             "blocked": False,
             "used_llm": False,
@@ -237,7 +239,9 @@ def test_build_summary_consolidates_totals(monkeypatch):
         {
             "category": "beta",
             "severity": "critical",
-            "execution": "generative",
+            "expected_execution": "generative",
+            "actual_execution": "generative",
+            "execution_matches": True,
             "passed": False,
             "blocked": True,
             "used_llm": True,
@@ -252,8 +256,15 @@ def test_build_summary_consolidates_totals(monkeypatch):
     assert summary["passed"] == 1
     assert summary["failed"] == 1
     assert summary["blocked"] == 1
-    assert summary["deterministic"] == 1
-    assert summary["generative"] == 1
+    assert summary["expected_execution_counts"] == {
+        "deterministic": 1,
+        "generative": 1,
+    }
+    assert summary["actual_execution_counts"] == {
+        "deterministic": 1,
+        "generative": 1,
+    }
+    assert summary["execution_mismatches"] == 0
     assert summary["failure_reasons"] == {"Falha controlada.": 1}
 
 
@@ -325,3 +336,100 @@ def test_run_rejects_filters_without_results(tmp_path):
             cases_file,
             execution="generative",
         )
+
+
+def test_validate_cases_rejects_missing_expected_used_llm():
+    case = make_case()
+    del case["expected_used_llm"]
+
+    with pytest.raises(
+        ValueError,
+        match="campos obrigatórios",
+    ):
+        run_evaluation._validate_cases([case])
+
+
+@pytest.mark.parametrize(
+    ("execution", "expected_used_llm"),
+    [
+        ("deterministic", True),
+        ("generative", False),
+    ],
+)
+def test_validate_cases_rejects_execution_llm_inconsistency(
+    execution,
+    expected_used_llm,
+):
+    with pytest.raises(
+        ValueError,
+        match="Configuração incoerente",
+    ):
+        run_evaluation._validate_cases(
+            [
+                make_case(
+                    execution=execution,
+                    expected_used_llm=expected_used_llm,
+                )
+            ]
+        )
+
+
+def test_evaluate_case_distinguishes_expected_and_actual_execution():
+    case = make_case(
+        execution="generative",
+        expected_used_llm=True,
+    )
+    response = make_response(used_llm=False)
+
+    result = run_evaluation._evaluate_case(case, response)
+
+    assert result["expected_execution"] == "generative"
+    assert result["actual_execution"] == "deterministic"
+    assert result["execution_matches"] is False
+    assert result["passed"] is False
+
+
+def test_build_summary_separates_expected_and_actual_execution(monkeypatch):
+    monkeypatch.setattr(
+        run_evaluation,
+        "SETTINGS",
+        SimpleNamespace(ollama_model="test-model"),
+    )
+    results = [
+        {
+            "category": "alpha",
+            "severity": "high",
+            "expected_execution": "deterministic",
+            "actual_execution": "deterministic",
+            "execution_matches": True,
+            "passed": True,
+            "blocked": False,
+            "used_llm": False,
+            "failures": [],
+        },
+        {
+            "category": "beta",
+            "severity": "critical",
+            "expected_execution": "generative",
+            "actual_execution": "deterministic",
+            "execution_matches": False,
+            "passed": False,
+            "blocked": False,
+            "used_llm": False,
+            "failures": ["Uso do LLM esperado=True, obtido=False."],
+        },
+    ]
+
+    summary = run_evaluation._build_summary(results)
+
+    assert summary["expected_execution_counts"] == {
+        "deterministic": 1,
+        "generative": 1,
+    }
+    assert summary["actual_execution_counts"] == {
+        "deterministic": 2,
+        "generative": 0,
+    }
+    assert summary["execution_mismatches"] == 1
+    assert "by_expected_execution" in summary
+    assert "by_actual_execution" in summary

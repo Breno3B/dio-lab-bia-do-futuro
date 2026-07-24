@@ -82,6 +82,14 @@ def build_deterministic_response(context: AgentContext) -> str | None:
             "Por isso, não posso informar uma cotação, taxa ou preço atual."
         )
 
+    if context.intent is Intent.ILLEGAL_ACTIVITY:
+        return (
+            "Não posso ajudar a ocultar patrimônio, falsificar ou manipular "
+            "documentos, omitir informações ou evitar fiscalização. "
+            "Posso ajudar com alternativas legais de organização financeira, "
+            "documentação e regularização."
+        )
+
     if context.intent is Intent.OUT_OF_SCOPE:
         return "Essa solicitação está fora do escopo financeiro da ClaraMente."
 

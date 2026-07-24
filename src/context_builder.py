@@ -139,6 +139,15 @@ def build_context(
             "Não informar valores atuais usando conhecimento interno do modelo."
         )
 
+    elif intent is Intent.ILLEGAL_ACTIVITY:
+        context.specific_restrictions.extend(
+            [
+                "Recusar claramente auxílio a fraude, falsificação, ocultação patrimonial ou manipulação de documentos.",
+                "Não fornecer etapas, exemplos operacionais ou sugestões que facilitem a atividade ilícita.",
+                "Oferecer somente alternativas legais de organização, documentação ou regularização financeira.",
+            ]
+        )
+
     elif intent is Intent.OUT_OF_SCOPE:
         context.specific_restrictions.append(
             "Responder brevemente que a solicitação está fora do escopo financeiro."

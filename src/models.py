@@ -18,6 +18,7 @@ class Intent(StrEnum):
     PRODUCT_COMPATIBILITY = "product_compatibility"
     SERVICE_HISTORY = "service_history"
     CURRENT_MARKET_DATA = "current_market_data"
+    ILLEGAL_ACTIVITY = "illegal_activity"
     OUT_OF_SCOPE = "out_of_scope"
     UNKNOWN = "unknown"
 
