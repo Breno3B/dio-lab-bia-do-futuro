@@ -61,7 +61,7 @@ def calculate_period_summary(
     entries = filtered.loc[filtered["tipo"].eq("entrada"), "valor"].sum()
     expenses = filtered.loc[filtered["tipo"].eq("saida"), "valor"].sum()
     return {
-        "quantidade_transacoes": int(len(filtered)),
+        "quantidade_transacoes": len(filtered),
         "total_entradas": round(float(entries), 2),
         "total_saidas": round(float(expenses), 2),
         "saldo": round(float(entries - expenses), 2),
