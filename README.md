@@ -69,7 +69,7 @@ para consultas em que a interpretação em linguagem natural agrega valor.
 - validação dos dados antes da análise;
 - validação de valores monetários e percentuais gerados pelo LLM;
 - instrumentação de latência, tokens e velocidade de geração;
-- testes unitários e suíte end-to-end com 65 casos determinísticos, generativos e adversariais.
+- testes unitários e suíte end-to-end com 65 casos, distribuídos entre execuções determinísticas e generativas, incluindo cenários funcionais, numéricos, de segurança e prompt injection.
 
 ---
 
@@ -148,7 +148,8 @@ dio-lab-bia-do-futuro/
 │   │   └── evaluation_cases.json
 │   ├── results/
 │   ├── README.md
-│   └── run_evaluation.py
+│   ├── run_evaluation.py
+│   └── summarize_results.py
 ├── src/
 │   ├── README.md
 │   ├── analytics.py
@@ -292,8 +293,10 @@ ruff check .
 Os testes automatizados simulam o cliente Ollama para permanecerem rápidos e
 reproduzíveis.
 
-A suíte end-to-end possui 65 casos determinísticos, generativos e adversariais.
-Os casos generativos utilizam o modelo real configurado no `.env`.
+A suíte end-to-end possui 65 casos, distribuídos entre execuções
+determinísticas e generativas, incluindo cenários funcionais, numéricos, de
+segurança e prompt injection. Os casos generativos utilizam o modelo real
+configurado no `.env`.
 
 Execute a suíte completa:
 
@@ -367,7 +370,6 @@ Limitações atuais:
 | `docs/03-prompts.md` | Prompts, contexto e edge cases. |
 | `docs/04-metricas.md` | Estratégia de avaliação. |
 | `docs/05-pitch.md` | Roteiro de apresentação. |
-| `docs/06-avaliacao-humana.md` | Formulário e critérios da avaliação humana. |
 | `src/README.md` | Arquitetura interna dos módulos. |
 | `evaluation/README.md` | Estrutura e execução da suíte end-to-end de 65 casos. |
 
