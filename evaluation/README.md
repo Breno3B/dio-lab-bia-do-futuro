@@ -103,12 +103,12 @@ Campos obrigatórios:
 | `execution` | Execução esperada: `deterministic` ou `generative` |
 | `question` | Mensagem enviada ao agente |
 | `expected_intent` | Intenção esperada |
+| `expected_used_llm` | Indica se o caso deve utilizar o LLM e deve ser coerente com `execution` |
 
 Campos opcionais:
 
 | Campo | Finalidade |
 |---|---|
-| `expected_used_llm` | Deve ser coerente com `execution`; casos contraditórios são rejeitados antes da execução |
 | `expected_blocked` | Valida se a saída foi bloqueada |
 | `required_terms` | Termos que devem aparecer na resposta |
 | `forbidden_terms` | Termos que não podem aparecer |
