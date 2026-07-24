@@ -180,7 +180,7 @@ def test_evaluate_case_reports_all_detected_failures():
     assert any("Termo obrigatório ausente" in item for item in result["failures"])
     assert any("Termo proibido presente" in item for item in result["failures"])
     assert any("Bloqueio esperado" in item for item in result["failures"])
-    assert any("Uso do LLM esperado" in item for item in result["failures"])
+    assert any("Execução esperada" in item for item in result["failures"])
 
 
 def test_group_summary_consolidates_results():
@@ -433,3 +433,124 @@ def test_build_summary_separates_expected_and_actual_execution(monkeypatch):
     assert summary["execution_mismatches"] == 1
     assert "by_expected_execution" in summary
     assert "by_actual_execution" in summary
+
+
+def test_validate_cases_rejects_expected_values_that_are_not_object():
+    with pytest.raises(ValueError, match="expected_values"):
+        run_evaluation._validate_cases(
+            [make_case(expected_values=["saldo", 1.0])]
+        )
+
+
+@pytest.mark.parametrize(
+    "expected_values",
+    [
+        {"": 1.0},
+        {"saldo": "2511.10"},
+        {"saldo": True},
+    ],
+)
+def test_validate_cases_rejects_invalid_expected_values(expected_values):
+    with pytest.raises(ValueError, match="expected_values"):
+        run_evaluation._validate_cases(
+            [make_case(expected_values=expected_values)]
+        )
+
+
+@pytest.mark.parametrize("tolerance", [-0.01, "0.01", True])
+def test_validate_cases_rejects_invalid_expected_value_tolerance(tolerance):
+    with pytest.raises(ValueError, match="expected_value_tolerance"):
+        run_evaluation._validate_cases(
+            [make_case(expected_value_tolerance=tolerance)]
+        )
+
+
+def test_get_nested_value_reads_dicts_and_lists():
+    data = {
+        "summary": {
+            "goals": [
+                {"progress": 66.67},
+            ]
+        }
+    }
+
+    assert (
+        run_evaluation._get_nested_value(
+            data,
+            "summary.goals.0.progress",
+        )
+        == 66.67
+    )
+
+
+def test_evaluate_case_accepts_matching_structured_values():
+    case = make_case(
+        expected_values={
+            "saldo": 2511.10,
+            "maior_categoria.valor": 1380.00,
+        }
+    )
+    response = make_response()
+    response.context.calculated_results = {
+        "saldo": 2511.10,
+        "maior_categoria": {"valor": 1380.00},
+    }
+
+    result = run_evaluation._evaluate_case(case, response)
+
+    assert result["passed"] is True
+    assert result["value_matches"] is True
+    assert result["actual_values"] == {
+        "saldo": 2511.10,
+        "maior_categoria.valor": 1380.00,
+    }
+
+
+def test_evaluate_case_reports_structured_value_difference():
+    case = make_case(
+        expected_values={"saldo": 2511.10},
+        expected_value_tolerance=0.01,
+    )
+    response = make_response()
+    response.context.calculated_results = {"saldo": 2500.00}
+
+    result = run_evaluation._evaluate_case(case, response)
+
+    assert result["passed"] is False
+    assert result["value_matches"] is False
+    assert any(
+        "Valor esperado em saldo" in failure
+        for failure in result["failures"]
+    )
+
+
+def test_evaluate_case_reports_missing_structured_value():
+    case = make_case(expected_values={"saldo": 2511.10})
+    response = make_response()
+    response.context.calculated_results = {}
+
+    result = run_evaluation._evaluate_case(case, response)
+
+    assert result["passed"] is False
+    assert result["actual_values"] == {"saldo": None}
+    assert any(
+        "Valor esperado não encontrado" in failure
+        for failure in result["failures"]
+    )
+
+
+def test_execution_mismatch_has_explicit_failure_message():
+    case = make_case(
+        execution="generative",
+        expected_used_llm=True,
+    )
+    response = make_response(used_llm=False)
+
+    result = run_evaluation._evaluate_case(case, response)
+
+    assert result["execution_matches"] is False
+    assert any(
+        failure
+        == "Execução esperada=generative, obtida=deterministic."
+        for failure in result["failures"]
+    )

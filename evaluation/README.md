@@ -103,16 +103,53 @@ Campos obrigatórios:
 | `execution` | Execução esperada: `deterministic` ou `generative` |
 | `question` | Mensagem enviada ao agente |
 | `expected_intent` | Intenção esperada |
-| `expected_used_llm` | Indica se o caso deve utilizar o LLM e deve ser coerente com `execution` |
 
 Campos opcionais:
 
 | Campo | Finalidade |
 |---|---|
+| `expected_used_llm` | Deve ser coerente com `execution`; casos contraditórios são rejeitados antes da execução |
 | `expected_blocked` | Valida se a saída foi bloqueada |
+| `expected_values` | Mapeia caminhos de `calculated_results` para valores numéricos esperados |
+| `expected_value_tolerance` | Tolerância absoluta da comparação numérica; padrão `0.01` |
 | `required_terms` | Termos que devem aparecer na resposta |
 | `forbidden_terms` | Termos que não podem aparecer |
 | `notes` | Contexto sobre o objetivo ou limitação do caso |
+
+
+## Fidelidade numérica estruturada
+
+Casos numéricos podem declarar valores esperados diretamente:
+
+```json
+{
+  "expected_values": {
+    "saldo": 2511.10,
+    "maior_categoria.participacao_percentual": 55.45
+  },
+  "expected_value_tolerance": 0.01
+}
+```
+
+Os caminhos são resolvidos sobre:
+
+```text
+response.context.calculated_results
+```
+
+A comparação não depende da redação da resposta e usa tolerância absoluta.
+O relatório registra `expected_values`, `actual_values` e `value_matches`.
+
+## Execução esperada e real
+
+Quando o fluxo executado diverge do planejado, o caso recebe uma falha explícita:
+
+```text
+Execução esperada=generative, obtida=deterministic.
+```
+
+O resumo mantém contagens esperadas, contagens reais e a quantidade de
+divergências.
 
 ## Relatórios
 

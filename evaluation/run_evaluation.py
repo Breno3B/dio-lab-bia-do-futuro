@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from collections import Counter, defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -79,6 +80,34 @@ def _validate_cases(cases: Any) -> list[dict[str, Any]]:
                     "uma lista de textos não vazios."
                 )
 
+        expected_values = raw_case.get("expected_values", {})
+        if not isinstance(expected_values, dict):
+            raise ValueError(
+                f"O campo expected_values do caso {case_id} deve ser um objeto."
+            )
+        if not all(
+            isinstance(path, str)
+            and path.strip()
+            and isinstance(value, int | float)
+            and not isinstance(value, bool)
+            for path, value in expected_values.items()
+        ):
+            raise ValueError(
+                f"O campo expected_values do caso {case_id} deve mapear "
+                "caminhos não vazios para valores numéricos."
+            )
+
+        tolerance = raw_case.get("expected_value_tolerance", 0.01)
+        if (
+            not isinstance(tolerance, int | float)
+            or isinstance(tolerance, bool)
+            or tolerance < 0
+        ):
+            raise ValueError(
+                f"O campo expected_value_tolerance do caso {case_id} "
+                "deve ser numérico e maior ou igual a zero."
+            )
+
         for field_name in ("expected_used_llm", "expected_blocked"):
             value = raw_case.get(field_name)
             if value is not None and not isinstance(value, bool):
@@ -105,6 +134,72 @@ def _is_blocked(response: Any) -> bool:
         "Resposta bloqueada:" in warning
         for warning in response.warnings
     )
+
+
+def _get_nested_value(data: Any, path: str) -> Any:
+    current = data
+    for part in path.split("."):
+        if isinstance(current, dict):
+            if part not in current:
+                raise KeyError(path)
+            current = current[part]
+        elif isinstance(current, list):
+            try:
+                index = int(part)
+            except ValueError as exc:
+                raise KeyError(path) from exc
+            if index < 0 or index >= len(current):
+                raise KeyError(path)
+            current = current[index]
+        else:
+            raise KeyError(path)
+    return current
+
+
+def _evaluate_expected_values(
+    case: dict[str, Any],
+    response: Any,
+) -> tuple[dict[str, Any], list[str]]:
+    expected_values = case.get("expected_values", {})
+    tolerance = float(case.get("expected_value_tolerance", 0.01))
+    actual_values: dict[str, Any] = {}
+    failures: list[str] = []
+
+    for path, expected in expected_values.items():
+        try:
+            actual = _get_nested_value(
+                response.context.calculated_results,
+                path,
+            )
+        except KeyError:
+            actual_values[path] = None
+            failures.append(
+                f"Valor esperado não encontrado no contexto: {path}."
+            )
+            continue
+
+        actual_values[path] = actual
+        if (
+            not isinstance(actual, int | float)
+            or isinstance(actual, bool)
+        ):
+            failures.append(
+                f"Valor obtido em {path} não é numérico: {actual!r}."
+            )
+            continue
+
+        if not math.isclose(
+            float(actual),
+            float(expected),
+            rel_tol=0.0,
+            abs_tol=tolerance,
+        ):
+            failures.append(
+                f"Valor esperado em {path}={expected}, obtido={actual}, "
+                f"tolerância={tolerance}."
+            )
+
+    return actual_values, failures
 
 
 def _evaluate_case(case: dict[str, Any], response: Any) -> dict[str, Any]:
@@ -137,10 +232,17 @@ def _evaluate_case(case: dict[str, Any], response: Any) -> dict[str, Any]:
     expected_used_llm = case["expected_used_llm"]
     actual_execution = "generative" if used_llm else "deterministic"
     execution_matches = case["execution"] == actual_execution
-    if used_llm != expected_used_llm:
+    if not execution_matches:
         failures.append(
-            f"Uso do LLM esperado={expected_used_llm}, obtido={used_llm}."
+            f"Execução esperada={case['execution']}, "
+            f"obtida={actual_execution}."
         )
+
+    actual_values, value_failures = _evaluate_expected_values(
+        case,
+        response,
+    )
+    failures.extend(value_failures)
 
     return {
         "id": case["id"],
@@ -156,6 +258,9 @@ def _evaluate_case(case: dict[str, Any], response: Any) -> dict[str, Any]:
         "used_llm": used_llm,
         "expected_blocked": expected_blocked,
         "blocked": blocked,
+        "expected_values": case.get("expected_values", {}),
+        "actual_values": actual_values,
+        "value_matches": not value_failures,
         "passed": not failures,
         "failures": failures,
         "response": response.content,

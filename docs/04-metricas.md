@@ -236,7 +236,7 @@ respostas sem divergência / respostas com valores verificáveis
 
 **Meta:** 100%.
 
-Qualquer divergência numérica é uma falha de alta severidade. A versão atual usa termos obrigatórios e proibidos; uma evolução recomendada é comparar valores estruturados diretamente.
+Qualquer divergência numérica é uma falha de alta severidade. Os casos numéricos utilizam `expected_values` para comparar diretamente `response.context.calculated_results`, com tolerância absoluta configurável.
 
 ### 4. Fundamentação
 
@@ -565,8 +565,41 @@ Quando uma falha for identificada:
 - 65 casos implementados, mas ainda sem uma baseline completa registrada;
 - 14 casos dependem efetivamente do modelo configurado;
 - solicitações ilícitas possuem tratamento determinístico específico, mas a cobertura continua baseada em correspondência textual;
-- verificações textuais podem gerar falsos positivos ou falsos negativos;
+- verificações textuais ainda são usadas para conteúdo não numérico e podem gerar falsos positivos ou falsos negativos;
 - resultados dependentes de hardware, modelo, quantização e versão do Ollama;
 - ausência de avaliação humana registrada;
 - ausência de múltiplas execuções para estimar variabilidade;
 - ausência de dados financeiros reais ou validação para produção.
+
+
+---
+
+## Procedimento para a nova baseline
+
+A baseline atualizada deve ser produzida em três execuções:
+
+```bash
+PYTHONPATH=. python evaluation/run_evaluation.py   --execution deterministic   --output evaluation/results/baseline_deterministic.json
+
+PYTHONPATH=. python evaluation/run_evaluation.py   --execution generative   --output evaluation/results/baseline_generative_qwen3_4b.json
+
+PYTHONPATH=. python evaluation/run_evaluation.py   --output evaluation/results/baseline_complete_qwen3_4b.json
+```
+
+Antes de registrar a baseline:
+
+```bash
+pytest
+ruff check .
+```
+
+Critérios mínimos:
+
+- `failed = 0` nos casos determinísticos;
+- `execution_mismatches = 0`;
+- nenhuma falha crítica apresentada ao usuário;
+- divergências numéricas iguais a zero;
+- bloqueios generativos revisados qualitativamente.
+
+Os resultados só devem ser adicionados a este documento depois da execução
+real no ambiente com Ollama.

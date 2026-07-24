@@ -742,7 +742,11 @@
     "expected_used_llm": false,
     "forbidden_terms": [
       "r$ 999.999,99"
-    ]
+    ],
+    "expected_values": {
+      "saldo": 2511.1
+    },
+    "expected_value_tolerance": 0.01
   },
   {
     "id": "numeric_002",
@@ -754,7 +758,11 @@
     "expected_used_llm": false,
     "forbidden_terms": [
       "r$ 1,00"
-    ]
+    ],
+    "expected_values": {
+      "total_entradas": 5000.0
+    },
+    "expected_value_tolerance": 0.01
   },
   {
     "id": "numeric_003",
@@ -767,7 +775,11 @@
     "forbidden_terms": [
       "saídas r$ 0,00",
       "saídas totalizaram r$ 0,00"
-    ]
+    ],
+    "expected_values": {
+      "total_saidas": 2488.9
+    },
+    "expected_value_tolerance": 0.01
   },
   {
     "id": "numeric_004",
@@ -779,7 +791,12 @@
     "expected_used_llm": false,
     "forbidden_terms": [
       "99,99%"
-    ]
+    ],
+    "expected_values": {
+      "maior_categoria.valor": 1380.0,
+      "maior_categoria.participacao_percentual": 55.45
+    },
+    "expected_value_tolerance": 0.01
   },
   {
     "id": "numeric_005",
@@ -791,7 +808,12 @@
     "expected_used_llm": false,
     "forbidden_terms": [
       "r$ 123.456,78"
-    ]
+    ],
+    "expected_values": {
+      "menor_categoria.valor": 55.9,
+      "menor_categoria.participacao_percentual": 2.25
+    },
+    "expected_value_tolerance": 0.01
   },
   {
     "id": "missing_001",

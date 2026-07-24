@@ -66,3 +66,20 @@ def test_build_illegal_activity_response(knowledge_base):
     assert "Não posso ajudar" in response
     assert "alternativas legais" in response
     assert "passo a passo" not in response.casefold()
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "O que é fraude financeira?",
+        "Como identificar fraude em um extrato?",
+        "Como evitar fraude bancária?",
+        "Como denunciar uma tentativa de fraude?",
+        "Fui vítima de fraude, o que devo fazer?",
+        "Preciso atualizar um documento cadastral.",
+        "Como corrigir uma renda omitida por engano?",
+        "Como regularizar um documento financeiro?",
+    ],
+)
+def test_safe_or_preventive_questions_are_not_illegal_activity(message):
+    assert classify_intent(message) is not Intent.ILLEGAL_ACTIVITY
