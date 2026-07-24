@@ -39,7 +39,7 @@ class ValidationReport:
     def is_valid(self) -> bool:
         return not self.errors
 
-    def extend(self, other: "ValidationReport") -> None:
+    def extend(self, other: ValidationReport) -> None:
         self.errors.extend(other.errors)
         self.warnings.extend(other.warnings)
 
