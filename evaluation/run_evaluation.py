@@ -137,7 +137,7 @@ def _evaluate_case(case: dict[str, Any], response: Any) -> dict[str, Any]:
     expected_used_llm = case["expected_used_llm"]
     actual_execution = "generative" if used_llm else "deterministic"
     execution_matches = case["execution"] == actual_execution
-    if expected_used_llm is not None and used_llm != expected_used_llm:
+    if used_llm != expected_used_llm:
         failures.append(
             f"Uso do LLM esperado={expected_used_llm}, obtido={used_llm}."
         )
