@@ -6,7 +6,6 @@ import pytest
 
 from src.config import Settings
 
-
 ENVIRONMENT_VARIABLES = (
     "OLLAMA_HOST",
     "OLLAMA_MODEL",

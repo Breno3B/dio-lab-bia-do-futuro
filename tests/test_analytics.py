@@ -9,8 +9,6 @@ from src.analytics import (
 )
 
 
-
-
 def test_available_period_uses_brazilian_date_format(knowledge_base):
     result = available_period(knowledge_base.transactions)
 
