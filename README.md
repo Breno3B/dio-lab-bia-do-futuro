@@ -148,7 +148,6 @@ dio-lab-bia-do-futuro/
 │   │   └── evaluation_cases.json
 │   ├── results/
 │   ├── README.md
-│   ├── run_adversarial.py
 │   └── run_evaluation.py
 ├── src/
 │   ├── README.md
@@ -312,12 +311,6 @@ Execute somente os casos generativos:
 
 ```bash
 PYTHONPATH=. python evaluation/run_evaluation.py --execution generative
-```
-
-O comando anterior permanece disponível por compatibilidade:
-
-```bash
-PYTHONPATH=. python evaluation/run_adversarial.py
 ```
 
 A presença dos 65 casos representa a cobertura implementada. Os resultados
