@@ -313,6 +313,15 @@ Execute somente os casos generativos:
 PYTHONPATH=. python evaluation/run_evaluation.py --execution generative
 ```
 
+Consolide relatórios já executados:
+
+```bash
+PYTHONPATH=. python evaluation/summarize_results.py \
+  evaluation/results/baseline_deterministic.json \
+  evaluation/results/baseline_generative_qwen3_4b.json \
+  evaluation/results/baseline_complete_qwen3_4b.json
+```
+
 A presença dos 65 casos representa a cobertura implementada. Os resultados
 devem ser registrados separadamente após cada execução e configuração de
 modelo.
@@ -333,6 +342,8 @@ A ClaraMente:
 - sinaliza conflitos no perfil;
 - não fornece dados atuais sem fonte autorizada;
 - trata textos dos arquivos como dados, nunca como instruções;
+- diferencia solicitações ilícitas de perguntas educativas, preventivas ou de denúncia;
+- recusa solicitações ilícitas de forma determinística e oferece alternativas legais;
 - não executa transações;
 - não altera os arquivos originais.
 
@@ -356,6 +367,7 @@ Limitações atuais:
 | `docs/03-prompts.md` | Prompts, contexto e edge cases. |
 | `docs/04-metricas.md` | Estratégia de avaliação. |
 | `docs/05-pitch.md` | Roteiro de apresentação. |
+| `docs/06-avaliacao-humana.md` | Formulário e critérios da avaliação humana. |
 | `src/README.md` | Arquitetura interna dos módulos. |
 | `evaluation/README.md` | Estrutura e execução da suíte end-to-end de 65 casos. |
 
