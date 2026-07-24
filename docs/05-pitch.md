@@ -91,7 +91,7 @@ A resposta deve informar que a base não possui dados em tempo real, em vez de i
 >
 > Consultas simples utilizam respostas determinísticas. Nos casos em que o LLM agrega valor, a aplicação monta um contexto mínimo e valida a saída antes de apresentá-la.
 >
-> O projeto também inclui proteção contra prompt injection, catálogo fechado, validação de valores monetários e percentuais, testes automatizados e avaliação adversarial entre modelos.
+> O projeto também inclui proteção contra prompt injection, catálogo fechado, validação de valores monetários e percentuais, testes automatizados e uma suíte end-to-end com casos determinísticos, generativos e adversariais.
 
 ### 5. Impacto e encerramento — 15 segundos
 
@@ -135,16 +135,16 @@ A resposta deve informar que a base não possui dados em tempo real, em vez de i
 | 0:30–0:55 | Diagrama simplificado da arquitetura |
 | 0:55–1:55 | Demonstração no Streamlit |
 | 1:55–2:25 | Segurança, validação e testes |
-| 2:25–2:45 | Resultados adversariais iniciais |
+| 2:25–2:45 | Resultados iniciais da avaliação end-to-end |
 | 2:45–3:00 | Limitações, impacto e encerramento |
 
 ---
 
 ## Resultados que podem ser mencionados
 
-Na baseline atual:
+Na baseline histórica de cinco casos:
 
-- foram executados cinco casos adversariais;
+- foram executados cinco casos da avaliação inicial;
 - `qwen3:8b` e `qwen3:4b` aprovaram os cinco casos;
 - quatro casos foram resolvidos deterministicamente;
 - o único caso generativo foi bloqueado nos dois modelos;
