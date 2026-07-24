@@ -103,12 +103,12 @@ Campos obrigatórios:
 | `execution` | Execução esperada: `deterministic` ou `generative` |
 | `question` | Mensagem enviada ao agente |
 | `expected_intent` | Intenção esperada |
+| `expected_used_llm` | Deve ser coerente com `execution`; casos contraditórios são rejeitados antes da execução |
 
 Campos opcionais:
 
 | Campo | Finalidade |
 |---|---|
-| `expected_used_llm` | Deve ser coerente com `execution`; casos contraditórios são rejeitados antes da execução |
 | `expected_blocked` | Valida se a saída foi bloqueada |
 | `expected_values` | Mapeia caminhos de `calculated_results` para valores numéricos esperados |
 | `expected_value_tolerance` | Tolerância absoluta da comparação numérica; padrão `0.01` |
