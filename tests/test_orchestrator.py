@@ -73,7 +73,8 @@ def test_product_query_requests_json_response(
     settings,
 ):
     client = TrackingLLMClient(
-        '{"resposta": "Não há recomendação específica.", '
+        '{"resposta": "Os dados são fictícios e existe uma divergência '
+        'no perfil que precisa ser confirmada antes de avaliar produtos.", '
         '"produtos_mencionados": []}'
     )
 
