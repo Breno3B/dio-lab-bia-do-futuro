@@ -13,6 +13,28 @@ from src.exceptions import LLMUnavailableError
 
 logger = logging.getLogger(__name__)
 
+PRODUCT_RESPONSE_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "resposta": {
+            "type": "string",
+            "minLength": 1,
+        },
+        "produtos_mencionados": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 1,
+            },
+        },
+    },
+    "required": [
+        "resposta",
+        "produtos_mencionados",
+    ],
+    "additionalProperties": False,
+}
+
 
 class OllamaLLMClient:
     """Adaptador da biblioteca oficial do Ollama com import tardio."""
@@ -116,7 +138,7 @@ class OllamaLLMClient:
         }
 
         if json_format:
-            chat_arguments["format"] = "json"
+            chat_arguments["format"] = PRODUCT_RESPONSE_SCHEMA
 
         try:
             response = self._client().chat(**chat_arguments)
