@@ -148,7 +148,7 @@ dio-lab-bia-do-futuro/
 │   │   │    ├── interface-principal.png
 │   │   │    └── resposta-deterministica.png
 │   │   └── testes/
-│   │   │    └── claramente-coverage_2026-07-23_18-36-12.png
+│   │        └── claramente-coverage_2026-07-23_18-36-12.png
 ├── evaluation/
 │   ├── cases/
 │   │   └── evaluation_cases.json
