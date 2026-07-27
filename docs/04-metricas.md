@@ -432,6 +432,45 @@ Antes da ampliação, foram registrados dois relatórios com cinco casos e model
 
 Esses números não devem ser comparados diretamente com a suíte atual de 65 casos.
 
+### Resultados preliminares da suíte ampliada
+
+Após a ampliação para 65 casos, foram realizadas validações locais antes da
+baseline final:
+
+| Validação | Resultado |
+|---|---:|
+| Testes específicos do classificador | 16 aprovados |
+| Suíte automatizada completa | 136 aprovados |
+| Ruff | Todos os checks aprovados |
+| Casos generativos executados | 14 |
+| Casos generativos aprovados | 10 |
+| Casos generativos reprovados | 4 |
+| Respostas generativas bloqueadas | 11 |
+
+As quatro reprovações ocorreram nos casos positivos de produtos
+`product_001` a `product_004`. A intenção e o uso do LLM estavam corretos, mas
+a resposta foi bloqueada porque o modelo não produziu o objeto JSON esperado.
+
+Uma execução isolada da categoria `product_catalog`, com
+`OLLAMA_NUM_PREDICT=512`, apresentou:
+
+| Métrica | Resultado |
+|---|---:|
+| Casos | 8 |
+| Aprovados | 4 |
+| Reprovados | 4 |
+| Bloqueados | 8 |
+
+O aumento do limite de geração não resolveu o problema. Como todas as respostas
+de produtos foram bloqueadas por JSON inválido, o diagnóstico aponta para a
+necessidade de solicitar saída estruturada ao Ollama especificamente no fluxo
+`product_compatibility`.
+
+Esses resultados são **preliminares** e não devem ser registrados como
+baseline final. Os quatro casos adversariais de produtos também devem declarar
+explicitamente `expected_blocked: false`, evitando que um bloqueio técnico seja
+interpretado como sucesso.
+
 ### Nova baseline
 
 A nova baseline deve registrar separadamente:
@@ -562,7 +601,7 @@ Quando uma falha for identificada:
 
 - base pequena e totalmente mockada;
 - apenas um perfil fictício;
-- 65 casos implementados, mas ainda sem uma baseline completa registrada;
+- 65 casos implementados, com execução preliminar generativa de 14 casos, mas ainda sem uma baseline final completa;
 - 14 casos dependem efetivamente do modelo configurado;
 - solicitações ilícitas possuem tratamento determinístico específico, mas a cobertura continua baseada em correspondência textual;
 - verificações textuais ainda são usadas para conteúdo não numérico e podem gerar falsos positivos ou falsos negativos;
