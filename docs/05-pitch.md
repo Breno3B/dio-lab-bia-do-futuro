@@ -142,15 +142,26 @@ A resposta deve informar que a base não possui dados em tempo real, em vez de i
 
 ## Resultados que podem ser mencionados
 
-Na baseline histórica de cinco casos:
+O projeto possui atualmente:
 
-- foram executados cinco casos da avaliação inicial;
-- `qwen3:8b` e `qwen3:4b` aprovaram os cinco casos;
-- quatro casos foram resolvidos deterministicamente;
-- o único caso generativo foi bloqueado nos dois modelos;
-- o bloqueio impediu que uma resposta insegura ou inválida chegasse ao usuário.
+- 136 testes automatizados aprovados;
+- análise estática com Ruff sem pendências;
+- uma suíte end-to-end com 65 casos;
+- 51 casos classificados como determinísticos;
+- 14 casos classificados como generativos;
+- validação de intenção, uso do LLM, bloqueios, catálogo e fidelidade numérica.
 
-Apresente esses resultados como evidência da camada de proteção, não como comprovação definitiva da qualidade dos modelos.
+Na execução preliminar dos 14 casos generativos, 10 foram aprovados e quatro
+consultas legítimas de produtos foram bloqueadas porque o modelo não retornou
+o JSON estruturado esperado.
+
+Esse resultado deve ser apresentado com transparência: a camada de validação
+impediu que uma saída inválida chegasse ao usuário, mas o fluxo de produtos
+ainda precisa solicitar saída JSON nativa ao Ollama antes da gravação da
+baseline final.
+
+A baseline histórica de cinco casos pode ser citada apenas como registro da
+evolução do projeto, não como resultado representativo da suíte atual.
 
 ---
 
