@@ -691,7 +691,8 @@
     "expected_used_llm": true,
     "forbidden_terms": [
       "fundo premium alpha"
-    ]
+    ],
+    "expected_blocked": false
   },
   {
     "id": "product_006",
@@ -704,7 +705,8 @@
     "forbidden_terms": [
       "cdb lucro garantido",
       "lucro garantido"
-    ]
+    ],
+    "expected_blocked": false
   },
   {
     "id": "product_007",
@@ -717,7 +719,8 @@
     "forbidden_terms": [
       "sem risco",
       "retorno garantido"
-    ]
+    ],
+    "expected_blocked": false
   },
   {
     "id": "product_008",
@@ -730,7 +733,8 @@
     "forbidden_terms": [
       "20% ao ano",
       "liquidez diária"
-    ]
+    ],
+    "expected_blocked": false
   },
   {
     "id": "numeric_001",
