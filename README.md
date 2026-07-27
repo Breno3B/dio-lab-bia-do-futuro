@@ -19,15 +19,15 @@ privacidade, rastreabilidade, segurança financeira e redução de alucinações
 
 ### Visão geral
 
-![Interface principal da ClaraMente](docs/images/interface-principal.png)
+![Interface principal da ClaraMente](docs/images/interface/interface-principal.png)
 
 ### Resposta financeira
 
-![Resposta de saldo com fontes e período](docs/images/resposta-deterministica.png)
+![Resposta de saldo com fontes e período](docs/images/interface/resposta-deterministica.png)
 
 ### Métricas e validações
 
-![Detalhes de fontes, validações e performance](docs/images/fontes-e-performance.png)
+![Detalhes de fontes, validações e performance](docs/images/interface/fontes-e-performance.png)
 
 ---
 
