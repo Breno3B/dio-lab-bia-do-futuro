@@ -11,7 +11,24 @@ class FailingOllamaClient:
         )
 
 
-def test_generate_does_not_expose_internal_exception(monkeypatch, settings):
+class RecordingOllamaClient:
+    def __init__(self) -> None:
+        self.chat_arguments = {}
+
+    def chat(self, **kwargs):
+        self.chat_arguments = kwargs
+        return {
+            "message": {"content": '{"resposta": "ok"}'},
+            "prompt_eval_count": 10,
+            "eval_count": 5,
+            "eval_duration": 1_000_000_000,
+        }
+
+
+def test_generate_does_not_expose_internal_exception(
+    monkeypatch,
+    settings,
+):
     client = OllamaLLMClient(settings)
     monkeypatch.setattr(client, "is_available", lambda: True)
     monkeypatch.setattr(client, "_client", lambda: FailingOllamaClient())
@@ -24,7 +41,42 @@ def test_generate_does_not_expose_internal_exception(monkeypatch, settings):
     assert "api/chat" not in str(exc_info.value)
 
 
-def test_stream_does_not_expose_internal_exception(monkeypatch, settings):
+def test_generate_does_not_request_json_by_default(
+    monkeypatch,
+    settings,
+):
+    ollama_client = RecordingOllamaClient()
+    client = OllamaLLMClient(settings)
+
+    monkeypatch.setattr(client, "is_available", lambda: True)
+    monkeypatch.setattr(client, "_client", lambda: ollama_client)
+
+    client.generate("system", "user")
+
+    assert "format" not in ollama_client.chat_arguments
+    assert ollama_client.chat_arguments["think"] is False
+
+
+def test_generate_requests_json_when_enabled(
+    monkeypatch,
+    settings,
+):
+    ollama_client = RecordingOllamaClient()
+    client = OllamaLLMClient(settings)
+
+    monkeypatch.setattr(client, "is_available", lambda: True)
+    monkeypatch.setattr(client, "_client", lambda: ollama_client)
+
+    client.generate("system", "user", json_format=True)
+
+    assert ollama_client.chat_arguments["format"] == "json"
+    assert ollama_client.chat_arguments["think"] is False
+
+
+def test_stream_does_not_expose_internal_exception(
+    monkeypatch,
+    settings,
+):
     client = OllamaLLMClient(settings)
     monkeypatch.setattr(client, "is_available", lambda: True)
     monkeypatch.setattr(client, "_client", lambda: FailingOllamaClient())
