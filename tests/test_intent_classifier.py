@@ -13,6 +13,10 @@ from src.models import Intent
         ("Já falei sobre Tesouro Selic?", Intent.SERVICE_HISTORY),
         ("Qual é a Selic hoje?", Intent.CURRENT_MARKET_DATA),
         ("Qual a previsão do tempo?", Intent.OUT_OF_SCOPE),
+        ("Quanto entrou e quanto saiu?", Intent.FINANCIAL_SUMMARY),
+        ("Quanto entrou no período?", Intent.FINANCIAL_SUMMARY),
+        ("Quanto saiu no período?", Intent.FINANCIAL_SUMMARY),
+        ("Qual foi minha entrada e minha saída?", Intent.FINANCIAL_SUMMARY),
     ],
 )
 def test_classify_intent(message, expected):
