@@ -10,7 +10,7 @@ from src.context_builder import build_context
 from src.data_validator import validate_knowledge_base
 from src.deterministic_responses import build_deterministic_response
 from src.intent_classifier import classify_intent
-from src.models import AgentResponse, KnowledgeBase
+from src.models import AgentResponse, Intent, KnowledgeBase
 from src.performance import PerformanceMetrics, elapsed_ms
 from src.prompts import SYSTEM_PROMPT, build_user_prompt
 from src.response_validator import validate_response
@@ -23,7 +23,13 @@ SAFE_BLOCKED_RESPONSE = (
 
 
 class LLMClientProtocol(Protocol):
-    def generate(self, system_prompt: str, user_prompt: str) -> str: ...
+    def generate(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        *,
+        json_format: bool = False,
+    ) -> str: ...
 
 
 def _merge_llm_metrics(
@@ -58,6 +64,7 @@ def answer_user_message(
     cleaned_message = user_message.strip()
     if not cleaned_message:
         raise ValueError("A mensagem do usuário não pode estar vazia.")
+
     if len(cleaned_message) > settings.max_user_message_chars:
         raise ValueError(
             "A mensagem excede o limite de "
@@ -93,6 +100,7 @@ def answer_user_message(
         metrics.input_chars = len(cleaned_message)
         metrics.output_chars = len(deterministic_content)
         metrics.total_ms = elapsed_ms(total_start)
+
         return AgentResponse(
             content=deterministic_content,
             intent=intent,
@@ -106,7 +114,11 @@ def answer_user_message(
     metrics.input_chars = len(SYSTEM_PROMPT) + len(user_prompt)
 
     step_start = perf_counter()
-    raw_content = llm_client.generate(SYSTEM_PROMPT, user_prompt)
+    raw_content = llm_client.generate(
+        SYSTEM_PROMPT,
+        user_prompt,
+        json_format=intent is Intent.PRODUCT_COMPATIBILITY,
+    )
     metrics.llm_ms = elapsed_ms(step_start)
     metrics.used_llm = True
     metrics.output_chars = len(raw_content)
@@ -124,7 +136,10 @@ def answer_user_message(
             context=context,
             warnings=[
                 *validation.warnings,
-                *(f"Resposta bloqueada: {error}" for error in validation.critical_errors),
+                *(
+                    f"Resposta bloqueada: {error}"
+                    for error in validation.critical_errors
+                ),
             ],
             performance_metrics=metrics.to_dict(),
         )
