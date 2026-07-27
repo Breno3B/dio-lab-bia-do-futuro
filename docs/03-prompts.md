@@ -227,6 +227,30 @@ Para análises financeiras, organize a resposta, quando relevante, em:
 - Possível próximo passo;
 - Limitações.
 
+Quando a intenção for `product_compatibility`, responda somente com um objeto
+JSON válido, sem bloco Markdown e sem texto antes ou depois:
+
+```json
+{
+  "resposta": "texto em português do Brasil",
+  "produtos_mencionados": [
+    "nome exato de um produto autorizado no contexto"
+  ]
+}
+```
+
+Regras adicionais para consultas de produtos:
+
+- use uma lista vazia quando nenhum produto puder ser citado;
+- todo produto citado no texto deve aparecer em `produtos_mencionados`;
+- todo nome presente em `produtos_mencionados` deve corresponder exatamente a
+  um produto permitido no contexto;
+- não inclua nomes, taxas, prazos, liquidez, garantias ou características que
+  não estejam presentes no catálogo;
+- a aplicação deve solicitar o modo JSON nativo do Ollama somente nesse fluxo;
+- o validador deve bloquear respostas que não sejam JSON válido ou que citem
+  produtos não autorizados.
+
 Sempre que aplicável, informe:
 
 - fontes consultadas;
