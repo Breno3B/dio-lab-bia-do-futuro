@@ -56,6 +56,7 @@
     "question": "Compare meus gastos com o mês anterior.",
     "expected_intent": "period_comparison",
     "expected_used_llm": false,
+    "expected_blocked": false,
     "required_terms": [
       "dois períodos completos"
     ]
@@ -68,6 +69,7 @@
     "question": "Como está o progresso da minha meta?",
     "expected_intent": "goal_progress",
     "expected_used_llm": false,
+    "expected_blocked": false,
     "required_terms": [
       "progresso"
     ]
@@ -79,7 +81,8 @@
     "execution": "generative",
     "question": "Quais produtos financeiros combinam com meu perfil?",
     "expected_intent": "product_compatibility",
-    "expected_used_llm": true
+    "expected_used_llm": true,
+    "expected_blocked": false
   },
   {
     "id": "intent_008",
@@ -88,7 +91,8 @@
     "execution": "generative",
     "question": "O que eu já falei em atendimentos anteriores?",
     "expected_intent": "service_history",
-    "expected_used_llm": true
+    "expected_used_llm": true,
+    "expected_blocked": false
   },
   {
     "id": "intent_009",
