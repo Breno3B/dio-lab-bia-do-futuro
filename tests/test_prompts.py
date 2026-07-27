@@ -19,12 +19,14 @@ def test_prompt_is_compact_and_removes_empty_fields():
 
 
 def test_product_prompt_requires_non_empty_response():
-    assert 'O campo "resposta" nunca pode ser vazio.' in SYSTEM_PROMPT
+    normalized_prompt = " ".join(SYSTEM_PROMPT.split())
+
+    assert 'O campo "resposta" nunca pode ser vazio.' in normalized_prompt
     assert (
         'use uma lista vazia em "produtos_mencionados"'
-        in SYSTEM_PROMPT
+        in normalized_prompt
     )
     assert (
         'explique o motivo no campo "resposta"'
-        in SYSTEM_PROMPT
+        in normalized_prompt
     )
