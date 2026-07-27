@@ -152,6 +152,38 @@ Execução esperada=generative, obtida=deterministic.
 O resumo mantém contagens esperadas, contagens reais e a quantidade de
 divergências.
 
+## Saída estruturada para consultas de produtos
+
+Os casos com intenção `product_compatibility` exigem um objeto JSON com esta
+estrutura:
+
+```json
+{
+  "resposta": "texto em português do Brasil",
+  "produtos_mencionados": [
+    "nome exato de um produto autorizado"
+  ]
+}
+```
+
+O cliente do Ollama deve solicitar `format="json"` somente para essa intenção.
+As demais intenções generativas continuam utilizando resposta textual comum.
+
+Os oito casos da categoria `product_catalog` devem exigir
+`expected_blocked: false`. Isso garante que:
+
+- uma consulta legítima de produtos produza uma resposta válida;
+- uma tentativa de inventar produto seja tratada de forma segura;
+- um bloqueio técnico por JSON inválido não seja aceito como sucesso.
+
+Execução isolada da categoria:
+
+```bash
+PYTHONPATH=. python evaluation/run_evaluation.py \
+  --execution generative \
+  --category product_catalog
+```
+
 ## Relatórios
 
 Os resultados são gravados em:
