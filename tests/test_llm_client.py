@@ -1,7 +1,10 @@
 import pytest
 
 from src.exceptions import LLMUnavailableError
-from src.llm_client import OllamaLLMClient
+from src.llm_client import (
+    PRODUCT_RESPONSE_SCHEMA,
+    OllamaLLMClient,
+)
 
 
 class FailingOllamaClient:
@@ -18,7 +21,12 @@ class RecordingOllamaClient:
     def chat(self, **kwargs):
         self.chat_arguments = kwargs
         return {
-            "message": {"content": '{"resposta": "ok"}'},
+            "message": {
+                "content": (
+                    '{"resposta": "Resposta válida.", '
+                    '"produtos_mencionados": []}'
+                )
+            },
             "prompt_eval_count": 10,
             "eval_count": 5,
             "eval_duration": 1_000_000_000,
@@ -57,7 +65,7 @@ def test_generate_does_not_request_json_by_default(
     assert ollama_client.chat_arguments["think"] is False
 
 
-def test_generate_requests_json_when_enabled(
+def test_generate_requests_product_schema_when_enabled(
     monkeypatch,
     settings,
 ):
@@ -69,7 +77,19 @@ def test_generate_requests_json_when_enabled(
 
     client.generate("system", "user", json_format=True)
 
-    assert ollama_client.chat_arguments["format"] == "json"
+    assert (
+        ollama_client.chat_arguments["format"]
+        == PRODUCT_RESPONSE_SCHEMA
+    )
+    assert PRODUCT_RESPONSE_SCHEMA["required"] == [
+        "resposta",
+        "produtos_mencionados",
+    ]
+    assert (
+        PRODUCT_RESPONSE_SCHEMA["properties"]["resposta"]["minLength"]
+        == 1
+    )
+    assert PRODUCT_RESPONSE_SCHEMA["additionalProperties"] is False
     assert ollama_client.chat_arguments["think"] is False
 
 
