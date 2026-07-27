@@ -159,7 +159,17 @@ def classify_intent(user_message: str) -> Intent:
 
     if _contains_any(
         text,
-        ("resumo", "saldo", "entrada", "entradas", "saída", "saida", "saidas", "saude financeira"),
+        (
+            "resumo",
+            "saldo",
+            "entrada",
+            "entradas",
+            "entrou",
+            "saida",
+            "saidas",
+            "saiu",
+            "saude financeira",
+        ),
     ):
         return Intent.FINANCIAL_SUMMARY
 
