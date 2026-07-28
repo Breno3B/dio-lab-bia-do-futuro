@@ -1,4 +1,4 @@
-"""Interface Streamlit da ClaraMente com layout inspirado em buscadores."""
+"""Interface Streamlit da ClaraMente."""
 
 from __future__ import annotations
 
@@ -20,13 +20,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-QUICK_QUESTIONS = [
-    "Qual é o meu saldo no período?",
-    "Em que categoria estou gastando mais?",
-    "Como está minha reserva de emergência?",
-]
-
-
 @st.cache_resource(show_spinner=False)
 def get_knowledge_base():
     knowledge_base = load_knowledge_base()
@@ -41,111 +34,17 @@ def get_llm_client() -> OllamaLLMClient:
 
 def initialize_session() -> None:
     if "messages" not in st.session_state:
-        st.session_state.messages = []
-    if "pending_message" not in st.session_state:
-        st.session_state.pending_message = None
-
-
-def inject_page_styles() -> None:
-    st.markdown(
-        """
-        <style>
-            .block-container {
-                padding-top: 2rem;
-                padding-bottom: 2rem;
-                max-width: 960px;
+        st.session_state.messages = [
+            {
+                "role": "assistant",
+                "content": (
+                    "Olá! Eu sou a **ClaraMente**. "
+                    "Posso analisar os dados financeiros "
+                    "mockados do projeto, explicar gastos, "
+                    "metas e produtos do catálogo."
+                ),
             }
-
-            .claramente-hero {
-                text-align: center;
-                margin-top: 1rem;
-                margin-bottom: 2rem;
-            }
-
-            .claramente-logo {
-                font-size: 4rem;
-                font-weight: 800;
-                line-height: 1.1;
-                margin-bottom: 0.3rem;
-            }
-
-            .claramente-tagline {
-                font-size: 1rem;
-                color: #9ca3af;
-                margin-bottom: 1rem;
-            }
-
-            .claramente-disclaimer {
-                background: rgba(59, 130, 246, 0.12);
-                border: 1px solid rgba(59, 130, 246, 0.25);
-                border-radius: 14px;
-                padding: 0.9rem 1rem;
-                margin: 0 auto 1.6rem auto;
-                max-width: 780px;
-                color: #bfdbfe;
-                text-align: center;
-            }
-
-            .claramente-search-section {
-                max-width: 820px;
-                margin: 0 auto 2rem auto;
-            }
-
-            .claramente-latest-title,
-            .claramente-history-title {
-                font-size: 1.1rem;
-                font-weight: 700;
-                margin-top: 1rem;
-                margin-bottom: 0.8rem;
-            }
-
-            .claramente-card {
-                border: 1px solid rgba(148, 163, 184, 0.18);
-                border-radius: 18px;
-                padding: 1rem 1.1rem;
-                background: rgba(15, 23, 42, 0.28);
-                margin-bottom: 1rem;
-            }
-
-            .claramente-user-label,
-            .claramente-assistant-label {
-                font-size: 0.84rem;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.04em;
-                margin-bottom: 0.4rem;
-            }
-
-            .claramente-user-label {
-                color: #fca5a5;
-            }
-
-            .claramente-assistant-label {
-                color: #fdba74;
-            }
-
-            .claramente-empty {
-                border: 1px dashed rgba(148, 163, 184, 0.25);
-                border-radius: 18px;
-                padding: 1rem;
-                color: #9ca3af;
-                background: rgba(15, 23, 42, 0.15);
-            }
-
-            .claramente-quick-title {
-                text-align: center;
-                color: #9ca3af;
-                font-size: 0.95rem;
-                margin: 0.75rem 0;
-            }
-
-            div[data-testid="stChatInput"] {
-                margin-bottom: 0.4rem;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+        ]
 
 
 def render_sidebar(llm_client: OllamaLLMClient) -> None:
@@ -155,18 +54,17 @@ def render_sidebar(llm_client: OllamaLLMClient) -> None:
         st.write(f"**Executor:** `{SETTINGS.ollama_host}`")
 
         status = llm_client.is_available()
-        if status:
-            st.success("Ollama disponível")
-        else:
-            st.error("Ollama indisponível")
+        st.success("Ollama disponível") if status else st.error(
+            "Ollama indisponível"
+        )
 
         st.caption(
-            "Todos os dados desta demonstração são fictícios e educacionais."
+            "Todos os dados desta demonstração são fictícios "
+            "e educacionais."
         )
 
         if st.button("Limpar conversa", use_container_width=True):
-            st.session_state.messages = []
-            st.session_state.pending_message = None
+            del st.session_state.messages
             st.rerun()
 
 
@@ -237,55 +135,34 @@ def render_context_details(response) -> None:
                     )
 
 
-def render_doodle() -> None:
-    st.markdown(
-        """
-        <div class="claramente-hero">
-            <div class="claramente-logo">🧠 ClaraMente</div>
-            <div class="claramente-tagline">
-                Clareza para cuidar da sua saúde financeira.
-            </div>
-            <div class="claramente-disclaimer">
-                Protótipo educacional com dados mockados.
-                Não representa recomendação financeira profissional.
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+def render_prompt_input() -> str | None:
+    """Exibe o campo de texto e as sugestões logo abaixo dele."""
 
+    suggestions = [
+        "Qual é o meu saldo no período?",
+        "Em que categoria estou gastando mais?",
+        "Como está minha reserva de emergência?",
+    ]
 
-def render_search_area() -> str | None:
     with st.container():
-        st.markdown(
-            '<div class="claramente-search-section">',
-            unsafe_allow_html=True,
-        )
-
         typed_message = st.chat_input(
             "Pergunte sobre os dados financeiros do projeto",
             key="chat_input",
         )
 
-        st.markdown(
-            '<div class="claramente-quick-title">Perguntas rápidas</div>',
-            unsafe_allow_html=True,
-        )
+        st.caption("Perguntas rápidas")
+        columns = st.columns(len(suggestions))
 
-        columns = st.columns(len(QUICK_QUESTIONS))
         selected_prompt = None
-
         for index, (column, suggestion) in enumerate(
-            zip(columns, QUICK_QUESTIONS, strict=True)
+            zip(columns, suggestions, strict=True)
         ):
             if column.button(
                 suggestion,
-                key=f"quick_question_{index}",
+                key=f"suggestion_{index}",
                 use_container_width=True,
             ):
                 selected_prompt = suggestion
-
-        st.markdown("</div>", unsafe_allow_html=True)
 
     return selected_prompt or typed_message
 
@@ -294,11 +171,12 @@ def process_pending_message(
     knowledge_base,
     llm_client: OllamaLLMClient,
 ) -> None:
-    user_message = st.session_state.pending_message
+    """Processa uma pergunta armazenada na sessão."""
+
+    user_message = st.session_state.pop("pending_message", None)
     if not user_message:
         return
 
-    st.session_state.pending_message = None
     st.session_state.messages.append(
         {
             "role": "user",
@@ -307,11 +185,15 @@ def process_pending_message(
     )
 
     try:
-        response = answer_user_message(
-            user_message,
-            knowledge_base,
-            llm_client,
-        )
+        with st.spinner(
+            "Analisando os dados e consultando o modelo local..."
+        ):
+            response = answer_user_message(
+                user_message,
+                knowledge_base,
+                llm_client,
+            )
+
         st.session_state.messages.append(
             {
                 "role": "assistant",
@@ -325,7 +207,9 @@ def process_pending_message(
             {
                 "role": "assistant",
                 "content": str(exc),
-                "error_command": f"ollama pull {SETTINGS.ollama_model}",
+                "error_command": (
+                    f"ollama pull {SETTINGS.ollama_model}"
+                ),
             }
         )
     except ClaraMenteError as exc:
@@ -342,98 +226,20 @@ def process_pending_message(
             {
                 "role": "assistant",
                 "content": (
-                    "Ocorreu um erro inesperado. Consulte os logs da aplicação."
+                    "Ocorreu um erro inesperado. "
+                    "Consulte os logs da aplicação."
                 ),
             }
         )
 
-
-def render_latest_interaction() -> None:
-    st.markdown(
-        '<div class="claramente-latest-title">Última pergunta e resposta</div>',
-        unsafe_allow_html=True,
-    )
-
-    if len(st.session_state.messages) < 2:
-        st.markdown(
-            """
-            <div class="claramente-empty">
-                Faça uma pergunta para visualizar aqui a resposta mais recente.
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        return
-
-    last_user = None
-    last_assistant = None
-
-    for message in reversed(st.session_state.messages):
-        if last_assistant is None and message["role"] == "assistant":
-            last_assistant = message
-            continue
-        if last_assistant is not None and message["role"] == "user":
-            last_user = message
-            break
-
-    if last_user is None or last_assistant is None:
-        st.markdown(
-            """
-            <div class="claramente-empty">
-                Ainda não há uma interação completa para exibir.
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        return
-
-    st.markdown('<div class="claramente-card">', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="claramente-user-label">Pergunta</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(last_user["content"])
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown('<div class="claramente-card">', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="claramente-assistant-label">Resposta</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(last_assistant["content"])
-
-    response = last_assistant.get("response")
-    if response is not None:
-        render_context_details(response)
-
-    error_command = last_assistant.get("error_command")
-    if error_command:
-        st.code(error_command, language="bash")
-
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.rerun()
 
 
-def render_history() -> None:
-    st.markdown(
-        '<div class="claramente-history-title">Histórico de perguntas e respostas</div>',
-        unsafe_allow_html=True,
-    )
+def render_conversation() -> None:
+    """Renderiza todas as mensagens já processadas."""
 
-    if not st.session_state.messages:
-        st.markdown(
-            """
-            <div class="claramente-empty">
-                O histórico aparecerá aqui depois das primeiras interações.
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        return
-
-    with st.expander("Abrir histórico completo", expanded=False):
-        for index, message in enumerate(st.session_state.messages, start=1):
-            label = "Pergunta" if message["role"] == "user" else "Resposta"
-            st.markdown(f"**{index}. {label}**")
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
             response = message.get("response")
@@ -444,9 +250,6 @@ def render_history() -> None:
             if error_command:
                 st.code(error_command, language="bash")
 
-            if index < len(st.session_state.messages):
-                st.divider()
-
 
 def main() -> None:
     st.set_page_config(
@@ -455,7 +258,13 @@ def main() -> None:
         layout="centered",
     )
 
-    inject_page_styles()
+    st.title("🧠 ClaraMente")
+    st.caption("Clareza para cuidar da sua saúde financeira.")
+    st.info(
+        "Protótipo educacional com dados mockados. "
+        "Não representa recomendação financeira profissional."
+    )
+
     initialize_session()
 
     try:
@@ -466,18 +275,15 @@ def main() -> None:
         st.stop()
 
     render_sidebar(llm_client)
-    render_doodle()
 
-    user_message = render_search_area()
+    process_pending_message(knowledge_base, llm_client)
+    render_conversation()
+
+    user_message = render_prompt_input()
     if user_message:
         st.session_state.pending_message = user_message
-        with st.spinner("Analisando os dados e consultando o modelo local..."):
-            process_pending_message(knowledge_base, llm_client)
         st.rerun()
-
-    render_latest_interaction()
-    render_history()
 
 
 if __name__ == "__main__":
-    main()
+    _ = main()
