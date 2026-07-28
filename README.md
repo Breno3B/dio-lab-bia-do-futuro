@@ -1,77 +1,55 @@
-# ClaraMente — Agente de Saúde Financeira Pessoal
+# ClaraMente — Agente Local de Saúde Financeira Pessoal
 
-A **ClaraMente** é um agente local de Inteligência Artificial desenvolvido para
-analisar dados financeiros pessoais mockados, explicar padrões de gastos,
-acompanhar metas e apresentar produtos de um catálogo fechado potencialmente
-compatíveis com o perfil informado.
+A **ClaraMente** é um agente local de Inteligência Artificial criado para
+analisar dados financeiros pessoais fictícios, explicar padrões de gastos,
+acompanhar metas, recuperar temas do histórico de atendimento e avaliar
+produtos de um catálogo fechado.
 
-O projeto utiliza **Python**, **pandas**, **Streamlit** e **Ollama**, com foco em
-privacidade, rastreabilidade, segurança financeira e redução de alucinações.
+O projeto utiliza **Python**, **pandas**, **Streamlit**, **Ollama** e
+**Qwen3:4b**, com foco em privacidade, rastreabilidade, segurança financeira,
+fidelidade numérica e redução de alucinações.
 
 > [!IMPORTANT]
-> Este é um projeto educacional. Todos os dados são fictícios e as respostas
+> Este é um projeto educacional. Todos os dados são fictícios. As respostas
 > não representam recomendação financeira, contábil, jurídica ou de
 > investimentos.
 
----
+## Estado atual
 
-## Demonstração da interface
+| Verificação | Resultado |
+|---|---:|
+| Ruff | aprovado |
+| Testes automatizados | 148 aprovados |
+| Avaliação end-to-end | 65 de 65 casos aprovados |
+| Casos determinísticos | 51 de 51 |
+| Casos generativos | 14 de 14 |
+| Falhas críticas | 0 |
+| Falhas numéricas | 0 |
+| Divergências de execução | 0 |
 
-### Visão geral
-
-![Interface principal da ClaraMente](docs/images/interface/interface-principal.png)
-
-### Resposta financeira
-
-![Resposta de saldo com fontes e período](docs/images/interface/resposta-deterministica.png)
-
-### Métricas e validações
-
-![Detalhes de fontes, validações e performance](docs/images/interface/fontes-e-performance.png)
-
----
+A baseline final foi executada com o modelo `qwen3:4b` e registrada em
+`evaluation/results/evaluation_20260728_012712.json`.
 
 ## Objetivo
 
-A ClaraMente transforma dados financeiros estruturados em explicações claras e
+A ClaraMente transforma dados financeiros estruturados em respostas claras e
 contextualizadas.
 
 A aplicação pode:
 
-- analisar receitas, despesas e saldo;
+- calcular entradas, saídas e saldo;
 - identificar as categorias com maior e menor concentração de gastos;
-- comparar períodos quando houver dados suficientes;
+- comparar períodos quando existirem dados suficientes;
 - acompanhar metas financeiras;
-- recuperar temas do histórico de atendimento;
-- avaliar produtos do catálogo conforme o perfil mockado;
-- indicar limitações, inconsistências e dados ausentes;
-- explicar fontes, critérios e métricas utilizados em cada resposta.
+- recuperar registros relevantes do histórico de atendimento;
+- avaliar produtos presentes no catálogo fechado;
+- sinalizar dados ausentes, inconsistentes ou fora do escopo;
+- recusar solicitações ilícitas sem depender do LLM;
+- informar quando não possui dados atuais de mercado;
+- apresentar fontes, critérios, validações e métricas de execução.
 
-Os cálculos são realizados de forma determinística por Python e pandas.
-Consultas simples usam respostas determinísticas; o modelo local é reservado
+Consultas simples usam respostas determinísticas. O modelo local é reservado
 para consultas em que a interpretação em linguagem natural agrega valor.
-
----
-
-## Principais características
-
-- execução local com Ollama;
-- modelo configurável por `.env`;
-- `qwen3:4b` recomendado para o hardware avaliado;
-- interface conversacional com Streamlit;
-- dados estruturados em CSV e JSON;
-- classificação de intenção por regras;
-- seleção dinâmica das fontes necessárias;
-- respostas determinísticas para consultas simples;
-- cálculos financeiros fora do LLM;
-- catálogo fechado de produtos;
-- proteção contra prompt injection;
-- validação dos dados antes da análise;
-- validação de valores monetários e percentuais gerados pelo LLM;
-- instrumentação de latência, tokens e velocidade de geração;
-- testes unitários e suíte end-to-end com 65 casos, distribuídos entre execuções determinísticas e generativas, incluindo cenários funcionais, numéricos, de segurança e prompt injection.
-
----
 
 ## Arquitetura
 
@@ -83,27 +61,54 @@ flowchart TD
     I --> C[Construtor de contexto]
     C --> D[Carregamento e validação dos dados]
     C --> A[Cálculos com Python e pandas]
-    A --> R{Resposta simples?}
+    A --> R{Resposta determinística disponível?}
     D --> R
     R -->|Sim| T[Resposta determinística]
     R -->|Não| P[Prompt estruturado]
-    P --> L[Ollama + modelo configurado]
+    P --> L[Ollama + Qwen3:4b]
     L --> V[Validação da resposta]
+    V -->|Válida| F[Resposta final]
+    V -->|Produto inseguro| FP[Fallback seguro de produtos]
+    V -->|Histórico inseguro ou excessivo| FH[Fallback seguro de histórico]
+    V -->|Outra violação| B[Resposta segura de bloqueio]
     T --> S
-    V --> S
+    F --> S
+    FP --> S
+    FH --> S
+    B --> S
 ```
 
 | Camada | Responsabilidade |
 |---|---|
-| Streamlit | Interface, histórico e apresentação das respostas. |
+| Streamlit | Interface, sessão e apresentação das respostas. |
 | Python e pandas | Leitura, validação, filtros, agregações e cálculos. |
-| Orquestração | Classificação, seleção de fontes e escolha do fluxo. |
-| Respostas determinísticas | Atendimento imediato de consultas simples. |
+| Classificação | Identificação determinística da intenção. |
+| Contexto | Seleção das fontes e resultados necessários. |
 | Ollama | Execução local do modelo configurado. |
-| Validação | Segurança, catálogo autorizado e fidelidade numérica. |
-| Performance | Coleta de latência, tokens e velocidade de geração. |
+| Validação | Fidelidade numérica, catálogo, perfil e segurança. |
+| Fallbacks | Respostas seguras para produtos e histórico. |
+| Performance | Latência, tokens e velocidade de geração. |
 
----
+## Principais características
+
+- execução local com Ollama;
+- modelo padrão `qwen3:4b`;
+- interface conversacional com Streamlit;
+- base fictícia em CSV e JSON;
+- classificação de intenção por regras reproduzíveis;
+- cálculos financeiros fora do LLM;
+- respostas determinísticas para consultas simples;
+- catálogo fechado de produtos;
+- saída estruturada em JSON para consultas de produtos;
+- proteção contra prompt injection;
+- recusa determinística de solicitações ilícitas;
+- validação de valores monetários e percentuais;
+- fallback seguro quando o LLM viola regras de produtos;
+- fallback seguro para histórico excessivo ou tentativa de acesso a
+  configurações internas;
+- instrumentação de latência, tokens e velocidade;
+- 148 testes automatizados;
+- suíte end-to-end com 65 casos.
 
 ## Tecnologias
 
@@ -111,53 +116,60 @@ flowchart TD
 |---|---|
 | Python | Linguagem principal. |
 | pandas | Processamento e análise dos dados. |
-| Streamlit | Interface web conversacional. |
+| Streamlit | Interface web. |
 | Ollama | Execução local do modelo. |
-| Qwen3 4B | Modelo padrão recomendado para o hardware avaliado. |
-| python-dotenv | Carregamento do arquivo `.env`. |
+| Qwen3:4b | Modelo local padrão. |
+| python-dotenv | Carregamento do `.env`. |
 | pytest | Testes automatizados. |
-| Ruff | Análise estática e padronização. |
-
----
+| Ruff | Análise estática. |
 
 ## Base de conhecimento
 
-A aplicação utiliza quatro arquivos mockados da pasta [`data/`](data/):
+A aplicação utiliza quatro arquivos fictícios da pasta [`data/`](data/):
 
 | Arquivo | Finalidade |
 |---|---|
-| `transacoes.csv` | Receitas e despesas fictícias. |
-| `historico_atendimento.csv` | Interações anteriores do cenário educacional. |
-| `perfil_investidor.json` | Perfil, objetivos, metas e tolerância a risco. |
+| `transacoes.csv` | Receitas e despesas. |
+| `historico_atendimento.csv` | Registros anteriores do cenário. |
+| `perfil_investidor.json` | Perfil, metas e tolerância a risco. |
 | `produtos_financeiros.json` | Catálogo fechado de produtos. |
 
-Os arquivos originais não são modificados. Conversões, filtros e agregações
-ocorrem somente em memória.
-
----
+Os arquivos originais não são alterados. Conversões, filtros e agregações
+ocorrem em memória.
 
 ## Estrutura do projeto
 
 ```text
 dio-lab-bia-do-futuro/
+├── .streamlit/
+├── .vscode/
 ├── data/
+│   ├── historico_atendimento.csv
+│   ├── perfil_investidor.json
+│   ├── produtos_financeiros.json
+│   └── transacoes.csv
 ├── docs/
 │   ├── images/
-│   │   ├── interface/
-│   │   │    ├── fontes-e-performance.png
-│   │   │    ├── interface-principal.png
-│   │   │    └── resposta-deterministica.png
-│   │   └── testes/
-│   │        └── claramente-coverage_2026-07-23_18-36-12.png
+│   │   └── interface/
+│   │       ├── fontes-e-performance.png
+│   │       ├── interface-principal.png
+│   │       └── resposta-deterministica.png
+│   ├── 01-documentacao-agente.md
+│   ├── 02-base-conhecimento.md
+│   ├── 03-prompts.md
+│   ├── 04-metricas.md
+│   └── 05-pitch.md
 ├── evaluation/
 │   ├── cases/
 │   │   └── evaluation_cases.json
 │   ├── results/
+│   │   └── evaluation_20260728_012712.json
 │   ├── README.md
 │   ├── run_evaluation.py
 │   └── summarize_results.py
 ├── src/
 │   ├── README.md
+│   ├── __init__.py
 │   ├── analytics.py
 │   ├── app.py
 │   ├── config.py
@@ -175,12 +187,15 @@ dio-lab-bia-do-futuro/
 │   └── response_validator.py
 ├── tests/
 ├── .env.example
-├── requirements.txt
+├── .gitignore
+├── pytest.ini
 ├── requirements-dev.txt
+├── requirements.txt
 └── README.md
 ```
 
----
+A pasta `evaluation/results/` pode conter outros relatórios produzidos durante
+comparações. O arquivo exibido na árvore é a baseline final consolidada.
 
 ## Pré-requisitos
 
@@ -190,8 +205,6 @@ dio-lab-bia-do-futuro/
 - memória suficiente para o modelo escolhido.
 
 Para o hardware avaliado, use inicialmente `qwen3:4b`.
-
----
 
 ## Instalação
 
@@ -204,45 +217,43 @@ source .venv/bin/activate
 
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
 
 ollama pull qwen3:4b
-```
-
-Crie o arquivo local de configuração:
-
-```bash
 cp .env.example .env
 ```
 
----
+No Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
+ollama pull qwen3:4b
+Copy-Item .env.example .env
+```
 
 ## Configuração
 
-O código possui padrões internos e o `.env.example` documenta a configuração
-recomendada para o hardware avaliado.
+| Variável | Padrão interno | Valor recomendado | Finalidade |
+|---|---:|---:|---|
+| `OLLAMA_HOST` | `http://localhost:11434` | igual | Endereço do Ollama. |
+| `OLLAMA_MODEL` | `qwen3:4b` | igual | Modelo local. |
+| `OLLAMA_TEMPERATURE` | `0.2` | igual | Variabilidade. |
+| `OLLAMA_TIMEOUT_SECONDS` | `180` | `180` ou `360` em avaliações longas | Tempo limite. |
+| `OLLAMA_NUM_CTX` | `4096` | igual | Janela de contexto. |
+| `OLLAMA_NUM_PREDICT` | `250` | `512` nas avaliações finais | Limite de saída. |
+| `MAX_USER_MESSAGE_CHARS` | `2000` | igual | Tamanho máximo da pergunta. |
+| `LOG_LEVEL` | `INFO` | igual | Nível de logs. |
 
-| Variável | Padrão interno | Finalidade |
-|---|---:|---|
-| `OLLAMA_HOST` | `http://localhost:11434` | Endereço do Ollama. |
-| `OLLAMA_MODEL` | `qwen3:4b` | Modelo local. |
-| `OLLAMA_TEMPERATURE` | `0.2` | Variabilidade das respostas. |
-| `OLLAMA_TIMEOUT_SECONDS` | `180` | Limite de espera em segundos. |
-| `OLLAMA_NUM_CTX` | `4096` | Janela máxima de contexto. |
-| `OLLAMA_NUM_PREDICT` | `250` | Máximo de tokens da resposta. |
-| `MAX_USER_MESSAGE_CHARS` | `2000` | Tamanho máximo da pergunta. |
-| `LOG_LEVEL` | `INFO` | Nível dos logs. |
+O código usa `python-dotenv` com `override=False`. Portanto, variáveis já
+definidas no terminal, sistema operacional ou infraestrutura têm prioridade
+sobre o arquivo `.env`.
 
-Os três limites abaixo são validados como inteiros maiores que zero:
-
-```text
-OLLAMA_NUM_CTX
-OLLAMA_NUM_PREDICT
-MAX_USER_MESSAGE_CHARS
-```
-
-O `.env` fornece a configuração local quando a variável não está definida no ambiente. Variáveis fornecidas pelo terminal, sistema operacional ou infraestrutura têm prioridade porque o carregamento do `python-dotenv` utiliza `override=False`.
-
----
+`OLLAMA_NUM_CTX`, `OLLAMA_NUM_PREDICT` e `MAX_USER_MESSAGE_CHARS` devem ser
+inteiros maiores que zero.
 
 ## Como executar
 
@@ -259,127 +270,207 @@ $env:PYTHONPATH = "."
 python -m streamlit run src/app.py
 ```
 
-A interface normalmente será aberta em:
-
-```text
-http://localhost:8501
-```
-
----
+A interface normalmente será aberta em `http://localhost:8501`.
 
 ## Exemplos de perguntas
 
 - Qual é o meu saldo no período?
 - Quanto entrou e quanto saiu?
-- Em que categoria estou gastando mais?
-- Com o que eu menos gasto?
+- Em qual categoria estou gastando mais?
+- Em qual categoria eu gastei menos?
 - Como está minha reserva de emergência?
-- Quais produtos do catálogo são compatíveis com meu perfil?
-- Já falei anteriormente sobre reserva de emergência?
-- Meus gastos aumentaram em relação ao período anterior?
-
----
+- Quais produtos combinam com meu perfil?
+- O que eu já falei em atendimentos anteriores?
+- Qual é a cotação do dólar hoje?
+- Compare meus gastos com o mês anterior.
 
 ## Testes e qualidade
 
-Instale as dependências de desenvolvimento:
-
 ```bash
-python -m pip install -r requirements-dev.txt
-```
-
-Execute:
-
-```bash
+ruff check .
 pytest
 pytest --cov=src --cov-report=term-missing
-ruff check .
 ```
 
-Os testes automatizados simulam o cliente Ollama para permanecerem rápidos e
-reproduzíveis.
+Resultado final validado:
 
-A suíte end-to-end possui 65 casos, distribuídos entre execuções
-determinísticas e generativas, incluindo cenários funcionais, numéricos, de
-segurança e prompt injection. Os casos generativos utilizam o modelo real
-configurado no `.env`.
+```text
+All checks passed!
+148 passed
+```
 
-Execute a suíte completa:
+A suíte unitária simula o cliente Ollama para permanecer rápida e
+reproduzível.
+
+### Avaliação end-to-end
+
+Suíte completa:
 
 ```bash
-PYTHONPATH=. python evaluation/run_evaluation.py
+OLLAMA_TIMEOUT_SECONDS=360 \
+OLLAMA_NUM_PREDICT=512 \
+PYTHONPATH=. \
+python evaluation/run_evaluation.py
 ```
 
-Execute somente os casos determinísticos:
+Somente os casos determinísticos:
 
 ```bash
-PYTHONPATH=. python evaluation/run_evaluation.py --execution deterministic
+PYTHONPATH=. python evaluation/run_evaluation.py \
+  --execution deterministic
 ```
 
-Execute somente os casos generativos:
+Somente os casos generativos:
 
 ```bash
-PYTHONPATH=. python evaluation/run_evaluation.py --execution generative
+OLLAMA_TIMEOUT_SECONDS=360 \
+OLLAMA_NUM_PREDICT=512 \
+PYTHONPATH=. \
+python evaluation/run_evaluation.py \
+  --execution generative
 ```
 
-Consolide relatórios já executados:
+Consolidar o relatório mais recente:
 
 ```bash
 PYTHONPATH=. python evaluation/summarize_results.py \
-  evaluation/results/baseline_deterministic.json \
-  evaluation/results/baseline_generative_qwen3_4b.json \
-  evaluation/results/baseline_complete_qwen3_4b.json
+  "$(ls -t evaluation/results/*.json | head -n 1)"
 ```
 
-A presença dos 65 casos representa a cobertura implementada. Os resultados
-devem ser registrados separadamente após cada execução e configuração de
-modelo.
+Consolidar relatórios específicos:
+
+```bash
+PYTHONPATH=. python evaluation/summarize_results.py \
+  evaluation/results/evaluation_20260728_012712.json
+```
+
+Resultado final:
+
+```text
+total: 65
+passed: 65
+failed: 0
+blocked: 0
+execution_mismatches: 0
+```
 
 Consulte [`evaluation/README.md`](evaluation/README.md) para detalhes.
-
----
 
 ## Segurança e limitações
 
 A ClaraMente:
 
-- utiliza apenas os dados enviados no contexto;
+- utiliza somente dados selecionados para o contexto;
 - não delega cálculos financeiros ao LLM;
 - não inventa produtos ausentes do catálogo;
 - valida valores monetários e percentuais;
-- diferencia dados ausentes de valores iguais a zero;
+- exige JSON estruturado em respostas de produtos;
 - sinaliza conflitos no perfil;
 - não fornece dados atuais sem fonte autorizada;
-- trata textos dos arquivos como dados, nunca como instruções;
-- diferencia solicitações ilícitas de perguntas educativas, preventivas ou de denúncia;
-- recusa solicitações ilícitas de forma determinística e oferece alternativas legais;
+- trata textos da base como dados, não como instruções;
+- diferencia solicitações ilícitas de perguntas educativas;
+- recusa solicitações ilícitas de forma determinística;
+- usa fallbacks seguros para produtos e histórico;
 - não executa transações;
 - não altera os arquivos originais.
 
 Limitações atuais:
 
-- base pequena e totalmente mockada;
-- um único perfil fictício;
-- ausência de mercado em tempo real;
+- base pequena e totalmente fictícia;
+- um único perfil;
+- ausência de integração com mercado em tempo real;
 - classificação de intenção baseada em regras;
-- desempenho dependente do hardware local;
-- necessidade de avaliação contínua ao trocar o modelo.
-
----
+- desempenho dependente do hardware;
+- necessidade de reavaliar o sistema ao trocar modelo ou configuração.
 
 ## Documentação
 
 | Documento | Conteúdo |
 |---|---|
-| `docs/01-documentacao-agente.md` | Caso de uso, persona e arquitetura. |
-| `docs/02-base-conhecimento.md` | Estrutura e validação dos dados. |
-| `docs/03-prompts.md` | Prompts, contexto e edge cases. |
-| `docs/04-metricas.md` | Estratégia de avaliação. |
-| `docs/05-pitch.md` | Roteiro de apresentação. |
-| `src/README.md` | Arquitetura interna dos módulos. |
-| `evaluation/README.md` | Estrutura e execução da suíte end-to-end de 65 casos. |
+| [`docs/01-documentacao-agente.md`](docs/01-documentacao-agente.md) | Caso de uso, persona e arquitetura. |
+| [`docs/02-base-conhecimento.md`](docs/02-base-conhecimento.md) | Estrutura, validação e uso dos dados. |
+| [`docs/03-prompts.md`](docs/03-prompts.md) | Prompts, formato JSON e edge cases. |
+| [`docs/04-metricas.md`](docs/04-metricas.md) | Estratégia, métricas e baseline final. |
+| [`docs/05-pitch.md`](docs/05-pitch.md) | Roteiro atualizado da apresentação. |
+| [`src/README.md`](src/README.md) | Arquitetura interna dos módulos. |
+| [`evaluation/README.md`](evaluation/README.md) | Execução e consolidação da avaliação. |
 
----
+## Interface
+
+A interface foi organizada para apresentar primeiro a visão geral da aplicação
+e, em seguida, os detalhes da resposta determinística e da rastreabilidade.
+
+### Visão geral
+
+<p align="center">
+  <img
+    src="docs/images/interface/interface-principal.png"
+    alt="Interface principal da ClaraMente"
+    width="900"
+  />
+</p>
+
+<p align="center">
+  <em>
+    Interface conversacional da ClaraMente com perguntas sugeridas,
+    histórico da sessão e respostas fundamentadas na base local.
+  </em>
+</p>
+
+### Resposta e rastreabilidade
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Resposta determinística</strong>
+    </td>
+    <td align="center" width="50%">
+      <strong>Fontes e performance</strong>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <img
+        src="docs/images/interface/resposta-deterministica.png"
+        alt="Resposta determinística da ClaraMente"
+        width="430"
+      />
+    </td>
+    <td align="center" valign="top">
+      <img
+        src="docs/images/interface/fontes-e-performance.png"
+        alt="Fontes consultadas e métricas de performance"
+        width="430"
+      />
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      Valores calculados por Python e pandas, sem delegar operações
+      financeiras ao modelo de linguagem.
+    </td>
+    <td valign="top">
+      Fontes utilizadas, caminho de execução e métricas técnicas disponíveis
+      para auditoria.
+    </td>
+  </tr>
+</table>
+
+<details>
+  <summary><strong>O que observar nas capturas</strong></summary>
+
+- respostas determinísticas para consultas numéricas;
+- indicação das fontes consultadas;
+- transparência sobre uso ou não do LLM;
+- métricas de latência, tokens e velocidade;
+- separação entre cálculo, geração e validação;
+- avisos e limitações apresentados ao usuário.
+
+</details>
+
+> [!NOTE]
+> Os caminhos usam `docs/images/interface/` em letras minúsculas. Em sistemas
+> Linux, a capitalização do diretório faz parte do caminho.
 
 ## Autoria e origem
 
