@@ -21,8 +21,10 @@ def _product_context(
         ],
         inconsistencies=(
             [
-                "Há divergência entre perfil_investidor e "
-                "aceita_risco."
+                (
+                    "Há divergência entre perfil_investidor e "
+                    "aceita_risco."
+                )
             ]
             if with_conflict
             else []

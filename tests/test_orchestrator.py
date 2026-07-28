@@ -3,7 +3,6 @@ import pytest
 from src.orchestrator import (
     HISTORY_FALLBACK_WARNING,
     PRODUCT_FALLBACK_WARNING,
-    SAFE_BLOCKED_RESPONSE,
     SAFE_PRODUCT_FALLBACK_RESPONSE,
     answer_user_message,
 )
@@ -157,7 +156,7 @@ def test_history_injection_uses_safe_fallback(
     assert HISTORY_FALLBACK_WARNING in response.warnings
 
 
-def test_non_product_block_keeps_default_safe_response(
+def test_invalid_history_response_uses_history_fallback(
     knowledge_base,
     settings,
 ):
@@ -172,11 +171,9 @@ def test_non_product_block_keeps_default_safe_response(
         settings,
     )
 
-    assert response.content == SAFE_BLOCKED_RESPONSE
-    assert any(
-        warning.startswith("Resposta bloqueada:")
-        for warning in response.warnings
-    )
+    assert response.content != client.response
+    assert "histórico" in response.content.casefold()
+    assert HISTORY_FALLBACK_WARNING in response.warnings
 
 
 def test_rejects_message_above_configured_limit(
