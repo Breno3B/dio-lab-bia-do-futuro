@@ -21,6 +21,19 @@ SAFE_BLOCKED_RESPONSE = (
     "Os dados deste projeto são mockados e têm finalidade educacional."
 )
 
+SAFE_PRODUCT_FALLBACK_RESPONSE = (
+    "Não posso apresentar produtos para esta solicitação. O catálogo é "
+    "fechado e os dados disponíveis não permitem avaliar opções com "
+    "segurança neste contexto. Também existe uma divergência no perfil "
+    "que precisa ser confirmada antes de prosseguir. Os dados são mockados "
+    "e têm finalidade educacional."
+)
+
+PRODUCT_FALLBACK_WARNING = (
+    "A resposta gerada para produtos não passou pelas validações e foi "
+    "substituída por uma resposta segura."
+)
+
 
 class LLMClientProtocol(Protocol):
     def generate(
@@ -130,6 +143,18 @@ def answer_user_message(
     metrics.total_ms = elapsed_ms(total_start)
 
     if validation.is_blocked:
+        if intent is Intent.PRODUCT_COMPATIBILITY:
+            return AgentResponse(
+                content=SAFE_PRODUCT_FALLBACK_RESPONSE,
+                intent=intent,
+                context=context,
+                warnings=[
+                    *validation.warnings,
+                    PRODUCT_FALLBACK_WARNING,
+                ],
+                performance_metrics=metrics.to_dict(),
+            )
+
         return AgentResponse(
             content=SAFE_BLOCKED_RESPONSE,
             intent=intent,
