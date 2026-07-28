@@ -24,6 +24,30 @@ def _matches_any(text: str, patterns: tuple[str, ...]) -> bool:
     return any(re.search(pattern, text) for pattern in patterns)
 
 
+def _is_current_market_data(text: str) -> bool:
+    market_entities = (
+        "selic",
+        "dolar",
+        "bitcoin",
+        "cotacao",
+        "cambio",
+        "mercado",
+    )
+    current_markers = (
+        "hoje",
+        "atual",
+        "agora",
+        "tempo real",
+        "preco",
+        "cotacao",
+        "taxa",
+    )
+    return _contains_any(text, market_entities) and _contains_any(
+        text,
+        current_markers,
+    )
+
+
 def classify_intent(user_message: str) -> Intent:
     text = normalize_text(user_message)
 
@@ -49,7 +73,6 @@ def classify_intent(user_message: str) -> Intent:
             "regularizar renda",
         ),
     )
-
     illegal_activity_patterns = (
         r"\bcomo(?: posso)? ocultar patrimonio\b",
         r"\bquero ocultar patrimonio\b",
@@ -73,28 +96,33 @@ def classify_intent(user_message: str) -> Intent:
         r"\bcomo enganar (?:uma )?verificacao\b",
         r"\bquero fraudar\b",
     )
-
-    if not safe_fraud_context and _matches_any(
-        text,
-        illegal_activity_patterns,
-    ):
+    if not safe_fraud_context and _matches_any(text, illegal_activity_patterns):
         return Intent.ILLEGAL_ACTIVITY
 
     if _contains_any(
         text,
-        ("tempo amanha", "previsao do tempo", "receita culinaria", "placar", "futebol"),
+        (
+            "tempo amanha",
+            "previsao do tempo",
+            "receita culinaria",
+            "placar",
+            "futebol",
+        ),
     ):
         return Intent.OUT_OF_SCOPE
 
-    if _contains_any(
-        text,
-        ("selic hoje", "cotacao hoje", "preco hoje", "taxa atual", "mercado hoje"),
-    ):
+    if _is_current_market_data(text):
         return Intent.CURRENT_MARKET_DATA
 
     if _contains_any(
         text,
-        ("ja falei", "atendimento anterior", "historico", "conversa anterior"),
+        (
+            "ja falei",
+            "atendimento anterior",
+            "atendimentos anteriores",
+            "historico",
+            "conversa anterior",
+        ),
     ):
         return Intent.SERVICE_HISTORY
 
@@ -106,7 +134,16 @@ def classify_intent(user_message: str) -> Intent:
 
     if _contains_any(
         text,
-        ("produto", "investir", "investimento", "cdb", "tesouro", "fundo", "lci", "lca"),
+        (
+            "produto",
+            "investir",
+            "investimento",
+            "cdb",
+            "tesouro",
+            "fundo",
+            "lci",
+            "lca",
+        ),
     ):
         return Intent.PRODUCT_COMPATIBILITY
 
@@ -116,8 +153,6 @@ def classify_intent(user_message: str) -> Intent:
     ):
         return Intent.PERIOD_COMPARISON
 
-    # Deve vir antes da regra genérica de despesas, pois "menos gasto"
-    # também contém a palavra "gasto".
     if _contains_any(
         text,
         (
@@ -162,11 +197,9 @@ def classify_intent(user_message: str) -> Intent:
         (
             "resumo",
             "saldo",
-            "entrada",
             "entradas",
-            "entrou",
-            "saida",
             "saidas",
+            "entrou",
             "saiu",
             "saude financeira",
         ),
