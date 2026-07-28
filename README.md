@@ -14,22 +14,6 @@ fidelidade numérica e redução de alucinações.
 > não representam recomendação financeira, contábil, jurídica ou de
 > investimentos.
 
-## Estado atual
-
-| Verificação | Resultado |
-|---|---:|
-| Ruff | aprovado |
-| Testes automatizados | 148 aprovados |
-| Avaliação end-to-end | 65 de 65 casos aprovados |
-| Casos determinísticos | 51 de 51 |
-| Casos generativos | 14 de 14 |
-| Falhas críticas | 0 |
-| Falhas numéricas | 0 |
-| Divergências de execução | 0 |
-
-A baseline final foi executada com o modelo `qwen3:4b` e registrada em
-`evaluation/results/evaluation_20260728_012712.json`.
-
 ## Objetivo
 
 A ClaraMente transforma dados financeiros estruturados em respostas claras e
@@ -50,6 +34,83 @@ A aplicação pode:
 
 Consultas simples usam respostas determinísticas. O modelo local é reservado
 para consultas em que a interpretação em linguagem natural agrega valor.
+
+## Interface
+
+A interface foi organizada para apresentar primeiro a visão geral da aplicação
+e, em seguida, os detalhes da resposta determinística e da rastreabilidade.
+
+### Visão geral
+
+<p align="center">
+  <img
+    src="docs/images/interface/interface-principal.png"
+    alt="Interface principal da ClaraMente"
+    width="900"
+  />
+</p>
+
+<p align="center">
+  <em>
+    Interface conversacional da ClaraMente com perguntas sugeridas,
+    histórico da sessão e respostas fundamentadas na base local.
+  </em>
+</p>
+
+### Resposta e rastreabilidade
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Resposta determinística</strong>
+    </td>
+    <td align="center" width="50%">
+      <strong>Fontes e performance</strong>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <img
+        src="docs/images/interface/resposta-deterministica.png"
+        alt="Resposta determinística da ClaraMente"
+        width="430"
+      />
+    </td>
+    <td align="center" valign="top">
+      <img
+        src="docs/images/interface/fontes-e-performance.png"
+        alt="Fontes consultadas e métricas de performance"
+        width="430"
+      />
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      Valores calculados por Python e pandas, sem delegar operações
+      financeiras ao modelo de linguagem.
+    </td>
+    <td valign="top">
+      Fontes utilizadas, caminho de execução e métricas técnicas disponíveis
+      para auditoria.
+    </td>
+  </tr>
+</table>
+
+<details>
+  <summary><strong>O que observar nas capturas</strong></summary>
+
+- respostas determinísticas para consultas numéricas;
+- indicação das fontes consultadas;
+- transparência sobre uso ou não do LLM;
+- métricas de latência, tokens e velocidade;
+- separação entre cálculo, geração e validação;
+- avisos e limitações apresentados ao usuário.
+
+</details>
+
+> [!NOTE]
+> Os caminhos usam `docs/images/interface/` em letras minúsculas. Em sistemas
+> Linux, a capitalização do diretório faz parte do caminho.
 
 ## Arquitetura
 
@@ -356,6 +417,22 @@ execution_mismatches: 0
 
 Consulte [`evaluation/README.md`](evaluation/README.md) para detalhes.
 
+## Estado atual
+
+| Verificação | Resultado |
+|---|---:|
+| Ruff | aprovado |
+| Testes automatizados | 148 aprovados |
+| Avaliação end-to-end | 65 de 65 casos aprovados |
+| Casos determinísticos | 51 de 51 |
+| Casos generativos | 14 de 14 |
+| Falhas críticas | 0 |
+| Falhas numéricas | 0 |
+| Divergências de execução | 0 |
+
+A baseline final foi executada com o modelo `qwen3:4b` e registrada em
+`evaluation/results/evaluation_20260728_012712.json`.
+
 ## Segurança e limitações
 
 A ClaraMente:
@@ -394,83 +471,6 @@ Limitações atuais:
 | [`docs/05-pitch.md`](docs/05-pitch.md) | Roteiro atualizado da apresentação. |
 | [`src/README.md`](src/README.md) | Arquitetura interna dos módulos. |
 | [`evaluation/README.md`](evaluation/README.md) | Execução e consolidação da avaliação. |
-
-## Interface
-
-A interface foi organizada para apresentar primeiro a visão geral da aplicação
-e, em seguida, os detalhes da resposta determinística e da rastreabilidade.
-
-### Visão geral
-
-<p align="center">
-  <img
-    src="docs/images/interface/interface-principal.png"
-    alt="Interface principal da ClaraMente"
-    width="900"
-  />
-</p>
-
-<p align="center">
-  <em>
-    Interface conversacional da ClaraMente com perguntas sugeridas,
-    histórico da sessão e respostas fundamentadas na base local.
-  </em>
-</p>
-
-### Resposta e rastreabilidade
-
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <strong>Resposta determinística</strong>
-    </td>
-    <td align="center" width="50%">
-      <strong>Fontes e performance</strong>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" valign="top">
-      <img
-        src="docs/images/interface/resposta-deterministica.png"
-        alt="Resposta determinística da ClaraMente"
-        width="430"
-      />
-    </td>
-    <td align="center" valign="top">
-      <img
-        src="docs/images/interface/fontes-e-performance.png"
-        alt="Fontes consultadas e métricas de performance"
-        width="430"
-      />
-    </td>
-  </tr>
-  <tr>
-    <td valign="top">
-      Valores calculados por Python e pandas, sem delegar operações
-      financeiras ao modelo de linguagem.
-    </td>
-    <td valign="top">
-      Fontes utilizadas, caminho de execução e métricas técnicas disponíveis
-      para auditoria.
-    </td>
-  </tr>
-</table>
-
-<details>
-  <summary><strong>O que observar nas capturas</strong></summary>
-
-- respostas determinísticas para consultas numéricas;
-- indicação das fontes consultadas;
-- transparência sobre uso ou não do LLM;
-- métricas de latência, tokens e velocidade;
-- separação entre cálculo, geração e validação;
-- avisos e limitações apresentados ao usuário.
-
-</details>
-
-> [!NOTE]
-> Os caminhos usam `docs/images/interface/` em letras minúsculas. Em sistemas
-> Linux, a capitalização do diretório faz parte do caminho.
 
 ## Autoria e origem
 
