@@ -38,8 +38,10 @@ def initialize_session() -> None:
             {
                 "role": "assistant",
                 "content": (
-                    "Olá! Eu sou a **ClaraMente**. Posso analisar os dados financeiros "
-                    "mockados do projeto, explicar gastos, metas e produtos do catálogo."
+                    "Olá! Eu sou a **ClaraMente**. "
+                    "Posso analisar os dados financeiros "
+                    "mockados do projeto, explicar gastos, "
+                    "metas e produtos do catálogo."
                 ),
             }
         ]
@@ -50,9 +52,17 @@ def render_sidebar(llm_client: OllamaLLMClient) -> None:
         st.header("Configuração")
         st.write(f"**Modelo:** `{SETTINGS.ollama_model}`")
         st.write(f"**Executor:** `{SETTINGS.ollama_host}`")
+
         status = llm_client.is_available()
-        st.success("Ollama disponível") if status else st.error("Ollama indisponível")
-        st.caption("Todos os dados desta demonstração são fictícios e educacionais.")
+        st.success("Ollama disponível") if status else st.error(
+            "Ollama indisponível"
+        )
+
+        st.caption(
+            "Todos os dados desta demonstração são fictícios "
+            "e educacionais."
+        )
+
         if st.button("Limpar conversa", use_container_width=True):
             del st.session_state.messages
             st.rerun()
@@ -62,46 +72,108 @@ def render_context_details(response) -> None:
     with st.expander("Fontes, contexto e validações"):
         st.write("**Intenção:**", response.intent.value)
         st.write("**Fontes:**")
+
         if response.context.sources:
             for source in response.context.sources:
                 st.markdown(f"- `{source}`")
         else:
             st.write("Nenhuma")
+
         period = response.context.period
         period_label = (
             period.get("descricao")
             if isinstance(period, dict)
             else None
         )
-        st.write("**Período:**", period_label or period or "Não aplicável")
+        st.write(
+            "**Período:**",
+            period_label or period or "Não aplicável",
+        )
+
         if response.context.limitations:
             st.write("**Limitações:**")
             for limitation in response.context.limitations:
                 st.write(f"- {limitation}")
+
         if response.warnings:
-            st.warning("Validação automática encontrou pontos para revisão:")
+            st.warning(
+                "Validação automática encontrou pontos para revisão:"
+            )
             for warning in response.warnings:
                 st.write(f"- {warning}")
+
         if response.performance_metrics:
             metrics = response.performance_metrics
             st.write("**Performance:**")
-            st.write(f"- Tempo total: {metrics.get('total_ms', 0):.2f} ms")
+            st.write(
+                f"- Tempo total: {metrics.get('total_ms', 0):.2f} ms"
+            )
             st.write(
                 "- Geração: "
-                + ("Ollama" if metrics.get("used_llm") else "resposta determinística")
+                + (
+                    "Ollama"
+                    if metrics.get("used_llm")
+                    else "resposta determinística"
+                )
             )
+
             if metrics.get("used_llm"):
-                st.write(f"- Tempo do LLM: {metrics.get('llm_ms', 0):.2f} ms")
+                st.write(
+                    f"- Tempo do LLM: "
+                    f"{metrics.get('llm_ms', 0):.2f} ms"
+                )
+
                 if metrics.get("eval_count") is not None:
-                    st.write(f"- Tokens gerados: {metrics['eval_count']}")
+                    st.write(
+                        f"- Tokens gerados: {metrics['eval_count']}"
+                    )
+
                 if metrics.get("tokens_per_second") is not None:
                     st.write(
-                        f"- Velocidade: {metrics['tokens_per_second']:.2f} tokens/s"
+                        "- Velocidade: "
+                        f"{metrics['tokens_per_second']:.2f} tokens/s"
                     )
 
 
+def render_prompt_input() -> str | None:
+    """Exibe o campo de texto e as sugestões logo abaixo dele."""
+
+    suggestions = [
+        "Qual é o meu saldo no período?",
+        "Em que categoria estou gastando mais?",
+        "Como está minha reserva de emergência?",
+    ]
+
+    with st.container():
+        typed_message = st.chat_input(
+            "Pergunte sobre os dados financeiros do projeto",
+            key="chat_input",
+        )
+
+        st.caption("Ou escolha uma sugestão:")
+        columns = st.columns(len(suggestions))
+
+        selected_prompt = None
+        for index, (column, suggestion) in enumerate(
+            zip(columns, suggestions, strict=True)
+        ):
+            if column.button(
+                suggestion,
+                key=f"suggestion_{index}",
+                use_container_width=True,
+            ):
+                selected_prompt = suggestion
+
+    return selected_prompt or typed_message
+
+
 def main() -> None:
-    st.set_page_config(page_title="ClaraMente", page_icon="🧠", layout="centered")
+    st.set_page_config(
+        page_title="ClaraMente",
+        page_icon="🧠",
+        layout="centered",
+    )
+
     st.title("🧠 ClaraMente")
     st.caption("Clareza para cuidar da sua saúde financeira.")
     st.info(
@@ -124,51 +196,56 @@ def main() -> None:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    st.write("**Sugestões:**")
-    cols = st.columns(3)
-    suggestions = [
-        "Qual é o meu saldo no período?",
-        "Em que categoria estou gastando mais?",
-        "Como está minha reserva de emergência?",
-    ]
-    selected_prompt = None
-    for column, suggestion in zip(cols, suggestions, strict=True):
-        if column.button(suggestion, use_container_width=True):
-            selected_prompt = suggestion
-
-    typed_message = st.chat_input("Pergunte sobre os dados financeiros do projeto")
-
-    user_message = selected_prompt or typed_message
-
+    user_message = render_prompt_input()
     if not user_message:
         return
 
-    st.session_state.messages.append({"role": "user", "content": user_message})
+    st.session_state.messages.append(
+        {
+            "role": "user",
+            "content": user_message,
+        }
+    )
+
     with st.chat_message("user"):
         st.markdown(user_message)
 
     with st.chat_message("assistant"):
         try:
-            with st.spinner("Analisando os dados e consultando o modelo local..."):
-                response = answer_user_message(user_message, knowledge_base, llm_client)
+            with st.spinner(
+                "Analisando os dados e consultando o modelo local..."
+            ):
+                response = answer_user_message(
+                    user_message,
+                    knowledge_base,
+                    llm_client,
+                )
+
             st.markdown(response.content)
             render_context_details(response)
+
             st.session_state.messages.append(
                 {
-                "role": "assistant",
-                "content": response.content,
+                    "role": "assistant",
+                    "content": response.content,
                 }
             )
         except LLMUnavailableError as exc:
             logger.warning("Ollama indisponível: %s", exc)
             st.error(str(exc))
-            st.code(f"ollama pull {SETTINGS.ollama_model}", language="bash")
+            st.code(
+                f"ollama pull {SETTINGS.ollama_model}",
+                language="bash",
+            )
         except ClaraMenteError as exc:
             logger.exception("Erro controlado na aplicação")
             st.error(str(exc))
         except Exception:
             logger.exception("Erro inesperado")
-            st.error("Ocorreu um erro inesperado. Consulte os logs da aplicação.")
+            st.error(
+                "Ocorreu um erro inesperado. "
+                "Consulte os logs da aplicação."
+            )
 
 
 if __name__ == "__main__":
