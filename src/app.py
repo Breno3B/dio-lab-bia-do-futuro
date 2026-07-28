@@ -150,7 +150,7 @@ def render_prompt_input() -> str | None:
             key="chat_input",
         )
 
-        st.caption("Ou escolha uma sugestão:")
+        st.caption("Perguntas rápidas")
         columns = st.columns(len(suggestions))
 
         selected_prompt = None
@@ -165,6 +165,90 @@ def render_prompt_input() -> str | None:
                 selected_prompt = suggestion
 
     return selected_prompt or typed_message
+
+
+def process_pending_message(
+    knowledge_base,
+    llm_client: OllamaLLMClient,
+) -> None:
+    """Processa uma pergunta armazenada na sessão."""
+
+    user_message = st.session_state.pop("pending_message", None)
+    if not user_message:
+        return
+
+    st.session_state.messages.append(
+        {
+            "role": "user",
+            "content": user_message,
+        }
+    )
+
+    try:
+        with st.spinner(
+            "Analisando os dados e consultando o modelo local..."
+        ):
+            response = answer_user_message(
+                user_message,
+                knowledge_base,
+                llm_client,
+            )
+
+        st.session_state.messages.append(
+            {
+                "role": "assistant",
+                "content": response.content,
+                "response": response,
+            }
+        )
+    except LLMUnavailableError as exc:
+        logger.warning("Ollama indisponível: %s", exc)
+        st.session_state.messages.append(
+            {
+                "role": "assistant",
+                "content": str(exc),
+                "error_command": (
+                    f"ollama pull {SETTINGS.ollama_model}"
+                ),
+            }
+        )
+    except ClaraMenteError as exc:
+        logger.exception("Erro controlado na aplicação")
+        st.session_state.messages.append(
+            {
+                "role": "assistant",
+                "content": str(exc),
+            }
+        )
+    except Exception:
+        logger.exception("Erro inesperado")
+        st.session_state.messages.append(
+            {
+                "role": "assistant",
+                "content": (
+                    "Ocorreu um erro inesperado. "
+                    "Consulte os logs da aplicação."
+                ),
+            }
+        )
+
+    st.rerun()
+
+
+def render_conversation() -> None:
+    """Renderiza todas as mensagens já processadas."""
+
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+            response = message.get("response")
+            if response is not None:
+                render_context_details(response)
+
+            error_command = message.get("error_command")
+            if error_command:
+                st.code(error_command, language="bash")
 
 
 def main() -> None:
@@ -192,60 +276,13 @@ def main() -> None:
 
     render_sidebar(llm_client)
 
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    process_pending_message(knowledge_base, llm_client)
+    render_conversation()
 
     user_message = render_prompt_input()
-    if not user_message:
-        return
-
-    st.session_state.messages.append(
-        {
-            "role": "user",
-            "content": user_message,
-        }
-    )
-
-    with st.chat_message("user"):
-        st.markdown(user_message)
-
-    with st.chat_message("assistant"):
-        try:
-            with st.spinner(
-                "Analisando os dados e consultando o modelo local..."
-            ):
-                response = answer_user_message(
-                    user_message,
-                    knowledge_base,
-                    llm_client,
-                )
-
-            st.markdown(response.content)
-            render_context_details(response)
-
-            st.session_state.messages.append(
-                {
-                    "role": "assistant",
-                    "content": response.content,
-                }
-            )
-        except LLMUnavailableError as exc:
-            logger.warning("Ollama indisponível: %s", exc)
-            st.error(str(exc))
-            st.code(
-                f"ollama pull {SETTINGS.ollama_model}",
-                language="bash",
-            )
-        except ClaraMenteError as exc:
-            logger.exception("Erro controlado na aplicação")
-            st.error(str(exc))
-        except Exception:
-            logger.exception("Erro inesperado")
-            st.error(
-                "Ocorreu um erro inesperado. "
-                "Consulte os logs da aplicação."
-            )
+    if user_message:
+        st.session_state.pending_message = user_message
+        st.rerun()
 
 
 if __name__ == "__main__":
