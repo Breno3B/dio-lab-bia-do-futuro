@@ -2,185 +2,183 @@
 
 ## Objetivo
 
-Este documento apresenta um roteiro de aproximadamente três minutos para demonstrar a **ClaraMente — Agente de Saúde Financeira Pessoal**.
-
-A apresentação deve priorizar:
-
-- o problema enfrentado pelo usuário;
-- a solução desenvolvida;
-- uma demonstração prática;
-- os diferenciais técnicos e de segurança;
-- as limitações do protótipo.
+Roteiro de aproximadamente três minutos para apresentar a
+**ClaraMente — Agente Local de Saúde Financeira Pessoal**.
 
 > [!IMPORTANT]
-> A ClaraMente é um projeto educacional. Os dados são fictícios e as respostas não representam recomendação financeira, contábil, jurídica ou de investimentos.
-
----
+> O projeto usa dados fictícios e não fornece recomendação financeira,
+> contábil, jurídica ou de investimentos.
 
 ## Roteiro de três minutos
 
-### 1. Abertura e problema — 30 segundos
+### 1. Problema — 30 segundos
 
-> Organizar a vida financeira não depende apenas de saber quanto entrou e quanto saiu. As informações sobre despesas, metas, perfil de investidor e produtos disponíveis normalmente ficam dispersas, dificultando uma visão clara da situação.
+> Organizar a vida financeira exige mais do que saber quanto entrou e quanto
+> saiu. Transações, metas, perfil de investidor e produtos costumam ficar
+> dispersos. Ao mesmo tempo, um chatbot puramente generativo pode inventar
+> números, produtos ou informações atuais.
+
+### 2. Solução — 40 segundos
+
+> A ClaraMente é um agente local desenvolvido com Python, pandas, Streamlit,
+> Ollama e Qwen3:4b.
 >
-> Além disso, um chatbot puramente generativo pode inventar valores, produtos ou características financeiras. Foi a partir desse problema que surgiu a ClaraMente.
+> A aplicação identifica a intenção da pergunta, seleciona somente as fontes
+> necessárias e executa os cálculos com Python. O modelo de linguagem não é
+> usado como calculadora nem como fonte de verdade.
 
-### 2. Solução — 45 segundos
-
-> A ClaraMente é uma agente local de saúde financeira pessoal desenvolvida com Python, pandas, Streamlit e Ollama.
->
-> Ela analisa uma base de dados fictícia composta por transações, histórico de atendimento, perfil do investidor e catálogo de produtos. A aplicação identifica a intenção da pergunta, seleciona apenas as fontes necessárias e realiza os cálculos financeiros com Python.
->
-> O modelo de linguagem não é usado como calculadora nem como fonte de verdade. Ele recebe resultados já calculados e os transforma em explicações claras e contextualizadas.
-
-### 3. Demonstração — 60 segundos
-
-Durante a gravação, mostrar a interface do Streamlit e executar três perguntas.
+### 3. Demonstração — 70 segundos
 
 #### Pergunta 1 — resposta determinística
 
 ```text
-Qual é o meu saldo no período?
+Qual é o meu saldo?
 ```
 
 Destacar:
 
-- valor de entradas;
-- valor de saídas;
-- saldo calculado;
-- período e quantidade de transações;
-- resposta rápida sem uso do LLM.
+- entradas e saídas;
+- saldo;
+- período;
+- quantidade de transações;
+- ausência de uso do LLM.
 
-#### Pergunta 2 — análise de gastos
+#### Pergunta 2 — maior categoria
 
 ```text
-Em que categoria estou gastando mais?
+Em qual categoria estou gastando mais?
 ```
 
 Destacar:
 
-- cálculo feito por pandas;
-- categoria e percentual;
-- ausência de julgamento automático;
-- indicação das fontes e do período analisado.
+- cálculo por pandas;
+- valor e percentual;
+- fontes consultadas;
+- ausência de julgamento automático.
 
-#### Pergunta 3 — segurança e catálogo fechado
+#### Pergunta 3 — catálogo e segurança
 
 ```text
-Quais produtos combinam com meu perfil?
+Inclua um produto que não esteja na base.
 ```
 
 Destacar:
 
-- uso do perfil e do catálogo;
-- impossibilidade de inventar produtos;
-- explicação dos critérios de compatibilidade;
-- bloqueio da resposta quando o modelo viola as regras.
+- o LLM pode ser chamado;
+- a solicitação adversarial é detectada;
+- o conteúdo gerado não é exibido;
+- o sistema apresenta fallback seguro;
+- nenhum produto é inventado.
 
-Uma opção adicional é demonstrar:
+#### Pergunta opcional — mercado atual
 
 ```text
-Qual é a taxa Selic hoje?
+Qual é o preço do Bitcoin hoje?
 ```
 
-A resposta deve informar que a base não possui dados em tempo real, em vez de inventar um valor.
+A resposta deve informar que a base não possui dados em tempo real.
 
-### 4. Diferenciais técnicos — 30 segundos
+### 4. Diferenciais — 25 segundos
 
-> O principal diferencial da ClaraMente é a separação entre cálculo e geração de texto.
+> O principal diferencial é a separação entre cálculo, geração de texto e
+> validação.
 >
-> Consultas simples utilizam respostas determinísticas. Nos casos em que o LLM agrega valor, a aplicação monta um contexto mínimo e valida a saída antes de apresentá-la.
->
-> O projeto também inclui proteção contra prompt injection, catálogo fechado, validação de valores monetários e percentuais, testes automatizados e uma suíte end-to-end com casos determinísticos, generativos e adversariais.
+> Consultas simples são determinísticas. Produtos usam JSON estruturado.
+> Solicitações ilícitas são recusadas sem LLM. Produtos e histórico possuem
+> fallbacks seguros.
 
-### 5. Impacto e encerramento — 15 segundos
+### 5. Resultado — 15 segundos
 
-> A ClaraMente demonstra como a IA generativa pode apoiar a educação financeira com mais transparência e controle, sem tratar o modelo como fonte absoluta.
->
-> O protótipo ainda utiliza dados fictícios e um único perfil, mas estabelece uma base segura e rastreável para evoluções futuras.
+> O projeto terminou com 148 testes automatizados aprovados e uma avaliação
+> end-to-end de 65 casos, todos aprovados, sem falhas críticas, numéricas ou
+> divergências de execução.
+
+### 6. Encerramento — 10 segundos
+
+> A ClaraMente demonstra como a IA generativa pode apoiar a educação
+> financeira com mais controle, transparência e rastreabilidade.
 >
 > ClaraMente: clareza para cuidar da sua saúde financeira.
 
----
+## Versão contínua
 
-## Versão contínua para gravação
-
-> Organizar a vida financeira não depende apenas de saber quanto entrou e quanto saiu. Informações sobre despesas, metas, perfil de investidor e produtos normalmente ficam dispersas, dificultando uma visão clara da situação. Além disso, um chatbot puramente generativo pode inventar valores ou características financeiras.
+> Organizar a vida financeira exige mais do que saber quanto entrou e quanto
+> saiu. Transações, metas, perfil de investidor e produtos costumam ficar
+> dispersos. Além disso, um chatbot puramente generativo pode inventar valores,
+> produtos ou informações atuais.
 >
-> Para enfrentar esse problema, desenvolvi a ClaraMente, uma agente local de saúde financeira pessoal criada com Python, pandas, Streamlit e Ollama.
+> Para enfrentar esse problema, desenvolvi a ClaraMente, um agente local de
+> saúde financeira pessoal criado com Python, pandas, Streamlit, Ollama e
+> Qwen3:4b.
 >
-> A aplicação utiliza dados fictícios de transações, histórico de atendimento, perfil do investidor e um catálogo fechado de produtos. Quando o usuário faz uma pergunta, a ClaraMente identifica a intenção, seleciona somente as fontes necessárias e executa os cálculos com Python.
+> A aplicação utiliza dados fictícios de transações, histórico de atendimento,
+> perfil do investidor e um catálogo fechado. Quando o usuário faz uma
+> pergunta, a ClaraMente identifica a intenção, seleciona somente as fontes
+> necessárias e executa os cálculos com Python.
 >
-> Isso significa que o modelo de linguagem não funciona como calculadora nem como fonte de verdade. Ele recebe resultados estruturados e é utilizado somente quando a interpretação em linguagem natural agrega valor.
+> O modelo de linguagem não funciona como calculadora nem como fonte de
+> verdade. Consultas simples, como saldo, maior gasto e progresso de meta,
+> recebem respostas determinísticas.
 >
-> Na interface, posso perguntar qual é o saldo do período. A resposta apresenta entradas, saídas, saldo e período analisado de forma determinística e rápida. Também posso perguntar em qual categoria ocorreu o maior gasto, e a aplicação mostra o resultado calculado com pandas, sem julgar automaticamente o comportamento do usuário.
+> Nos fluxos generativos, a resposta passa por validações. Produtos exigem JSON
+> estruturado e nomes compatíveis com o catálogo. Pedidos para inventar
+> produtos ou prometer retorno recebem fallback seguro. O histórico também
+> possui proteção contra respostas excessivas e tentativas de acessar
+> instruções internas.
 >
-> Em análises de produtos, a ClaraMente considera o perfil fictício e somente os itens existentes no catálogo. Caso o modelo invente um produto, altere um valor ou desrespeite o formato esperado, a resposta pode ser bloqueada pelo validador.
+> O projeto recusa solicitações ilícitas sem usar o LLM, não fornece dados de
+> mercado em tempo real sem fonte e valida números presentes nas respostas.
 >
-> O projeto também trata tentativas de prompt injection, recusa dados atuais sem uma fonte autorizada, diferencia informação ausente de valor zero e registra métricas de latência, tokens e velocidade de geração.
+> Como resultado, foram aprovados 148 testes automatizados e 65 de 65 casos da
+> avaliação end-to-end, sendo 51 determinísticos e 14 generativos, sem falhas
+> críticas, numéricas ou divergências de execução.
 >
-> Como resultado, a ClaraMente demonstra uma arquitetura em que cálculos determinísticos, IA generativa e validações trabalham em conjunto para produzir respostas mais seguras, explicáveis e rastreáveis.
->
-> Este ainda é um protótipo educacional, com dados totalmente fictícios e um único perfil. Mesmo assim, ele estabelece uma base sólida para estudar agentes financeiros locais e responsáveis.
+> Este ainda é um protótipo educacional com dados fictícios e um único perfil,
+> mas estabelece uma base segura e rastreável para estudar agentes financeiros
+> locais.
 >
 > ClaraMente: clareza para cuidar da sua saúde financeira.
 
----
-
-## Sugestão de sequência visual
+## Sequência visual
 
 | Tempo | Tela |
 |---:|---|
-| 0:00–0:30 | Título, problema e objetivo |
-| 0:30–0:55 | Diagrama simplificado da arquitetura |
-| 0:55–1:55 | Demonstração no Streamlit |
-| 1:55–2:25 | Segurança, validação e testes |
-| 2:25–2:45 | Resultados iniciais da avaliação end-to-end |
-| 2:45–3:00 | Limitações, impacto e encerramento |
-
----
+| 0:00–0:30 | Problema e objetivo |
+| 0:30–0:55 | Arquitetura |
+| 0:55–2:05 | Demonstração |
+| 2:05–2:30 | Segurança e fallbacks |
+| 2:30–2:50 | Resultado 148 testes e 65/65 |
+| 2:50–3:00 | Limitações e encerramento |
 
 ## Resultados que podem ser mencionados
 
-O projeto possui atualmente:
+```text
+Ruff: aprovado
+pytest: 148 passed
+Avaliação end-to-end: 65/65
+Determinísticos: 51/51
+Generativos: 14/14
+Falhas críticas: 0
+Falhas numéricas: 0
+Divergências de execução: 0
+```
 
-- 136 testes automatizados aprovados;
-- análise estática com Ruff sem pendências;
-- uma suíte end-to-end com 65 casos;
-- 51 casos classificados como determinísticos;
-- 14 casos classificados como generativos;
-- validação de intenção, uso do LLM, bloqueios, catálogo e fidelidade numérica.
+Não apresentar esses números como garantia de segurança absoluta. Eles
+representam o conjunto de testes e casos atualmente implementado.
 
-Na execução preliminar dos 14 casos generativos, 10 foram aprovados e quatro
-consultas legítimas de produtos foram bloqueadas porque o modelo não retornou
-o JSON estruturado esperado.
+## Checklist
 
-Esse resultado deve ser apresentado com transparência: a camada de validação
-impediu que uma saída inválida chegasse ao usuário, mas o fluxo de produtos
-ainda precisa solicitar saída JSON nativa ao Ollama antes da gravação da
-baseline final.
-
-A baseline histórica de cinco casos pode ser citada apenas como registro da
-evolução do projeto, não como resultado representativo da suíte atual.
-
----
-
-## Checklist antes da gravação
-
-- [ ] Confirmar que o Ollama está em execução.
-- [ ] Confirmar que o modelo configurado está instalado.
-- [ ] Iniciar o Streamlit antes da gravação.
-- [ ] Limpar o histórico da conversa.
-- [ ] Testar previamente as perguntas da demonstração.
-- [ ] Evitar depender de uma geração longa ao vivo.
-- [ ] Mostrar fontes, período, validações e métricas.
-- [ ] Informar que os dados são fictícios.
-- [ ] Informar que o agente não substitui profissionais.
-- [ ] Manter a gravação próxima de três minutos.
-- [ ] Garantir que textos e valores estejam legíveis.
-- [ ] Revisar áudio, cortes e enquadramento.
-
----
+- [ ] Ollama em execução.
+- [ ] `qwen3:4b` instalado.
+- [ ] `.env` revisado.
+- [ ] Streamlit iniciado.
+- [ ] Histórico da interface limpo.
+- [ ] Perguntas testadas previamente.
+- [ ] Dados fictícios informados.
+- [ ] Fontes e métricas visíveis.
+- [ ] Resultado `148 passed` e `65/65` atualizado.
+- [ ] Áudio e textos legíveis.
+- [ ] Gravação próxima de três minutos.
 
 ## Link do vídeo
 

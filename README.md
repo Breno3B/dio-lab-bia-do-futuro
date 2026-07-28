@@ -53,42 +53,42 @@ para consultas em que a interpretação em linguagem natural agrega valor.
 
 ## Arquitetura
 
+A arquitetura separa três responsabilidades principais:
+
+- **Python e pandas** calculam e validam os dados;
+- **o LLM local** interpreta consultas que exigem linguagem natural;
+- **a validação** garante que somente uma resposta segura seja apresentada.
+
 ```mermaid
 flowchart TD
-    U[Usuário] --> S[Interface Streamlit]
-    S --> O[Orquestrador]
-    O --> I[Classificador de intenção]
-    I --> C[Construtor de contexto]
-    C --> D[Carregamento e validação dos dados]
-    C --> A[Cálculos com Python e pandas]
-    A --> R{Resposta determinística disponível?}
-    D --> R
-    R -->|Sim| T[Resposta determinística]
-    R -->|Não| P[Prompt estruturado]
-    P --> L[Ollama + Qwen3:4b]
-    L --> V[Validação da resposta]
-    V -->|Válida| F[Resposta final]
-    V -->|Produto inseguro| FP[Fallback seguro de produtos]
-    V -->|Histórico inseguro ou excessivo| FH[Fallback seguro de histórico]
-    V -->|Outra violação| B[Resposta segura de bloqueio]
-    T --> S
-    F --> S
-    FP --> S
-    FH --> S
-    B --> S
+    U[Usuário] --> I[Interface Streamlit]
+    I --> O[Orquestrador]
+    O --> C[Classificação e contexto]
+
+    C --> Q{Resposta determinística?}
+
+    Q -->|Sim| D[Cálculos com Python e pandas]
+    Q -->|Não| L[Ollama + Qwen3:4b]
+
+    D --> R[Resposta segura]
+    L --> V[Validação]
+    V --> R
+
+    R --> I
 ```
+
+O diagrama mostra o fluxo conceitual. Os fallbacks de produtos e histórico
+fazem parte da etapa **Validação**, sem criar novos caminhos arquiteturais
+para o usuário.
 
 | Camada | Responsabilidade |
 |---|---|
 | Streamlit | Interface, sessão e apresentação das respostas. |
+| Orquestrador | Coordena classificação, contexto, execução e resposta. |
 | Python e pandas | Leitura, validação, filtros, agregações e cálculos. |
-| Classificação | Identificação determinística da intenção. |
-| Contexto | Seleção das fontes e resultados necessários. |
-| Ollama | Execução local do modelo configurado. |
-| Validação | Fidelidade numérica, catálogo, perfil e segurança. |
-| Fallbacks | Respostas seguras para produtos e histórico. |
-| Performance | Latência, tokens e velocidade de geração. |
-
+| Ollama | Executa localmente as consultas generativas. |
+| Validação | Verifica segurança, números, catálogo e aplica fallbacks. |
+| Performance | Registra latência, tokens e velocidade de geração. |
 ## Principais características
 
 - execução local com Ollama;

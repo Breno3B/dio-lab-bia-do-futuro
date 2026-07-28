@@ -1,12 +1,12 @@
 # Código da aplicação
 
-Esta pasta contém a implementação da **ClaraMente — Agente de Saúde Financeira
-Pessoal**.
+Esta pasta contém a implementação da
+**ClaraMente — Agente Local de Saúde Financeira Pessoal**.
 
-Instalação, execução e testes estão documentados no
+Instalação, execução e testes estão no
 [`README.md` da raiz](../README.md).
 
-## Arquitetura interna
+## Fluxo interno
 
 ```text
 Usuário
@@ -23,22 +23,59 @@ orchestrator.py
   ├── llm_client.py
   ├── response_validator.py
   └── performance.py
+```
 
 Configuração:
+
+```text
 .env → config.py → SETTINGS
+```
 
 Carregamento:
+
+```text
 data_loader.py → data_validator.py → KnowledgeBase
 ```
 
-O orquestrador escolhe entre dois caminhos:
+## Caminhos de resposta
 
-1. **Resposta determinística:** usada quando os resultados calculados são
-   suficientes, como saldo, maior/menor categoria e progresso de metas.
-2. **Resposta com LLM:** usada quando a interpretação textual agrega valor.
-   O modelo é configurado no `.env` e executado localmente pelo Ollama.
+### Determinístico
 
-O LLM não deve atuar como calculadora nem como fonte de dados financeiros.
+Usado para:
+
+- resumo financeiro;
+- maior e menor categoria;
+- comparação de períodos;
+- metas;
+- mercado atual sem fonte;
+- solicitação ilícita;
+- fora do escopo;
+- intenção desconhecida.
+
+### Generativo
+
+Usado para:
+
+- histórico de atendimento;
+- compatibilidade de produtos.
+
+A saída generativa sempre passa pelo validador.
+
+### Fallbacks
+
+Produtos:
+
+- saída inválida;
+- catálogo violado;
+- produto inventado;
+- pedido adversarial;
+- promessa de retorno ou ausência de risco.
+
+Histórico:
+
+- resposta excessivamente longa;
+- valor não fundamentado;
+- tentativa de acessar prompt ou configurações internas.
 
 ## Estrutura
 
@@ -63,35 +100,33 @@ src/
 └── response_validator.py
 ```
 
-## Responsabilidade dos módulos
+## Responsabilidades
 
 | Arquivo | Responsabilidade |
 |---|---|
-| `app.py` | Interface Streamlit, sessão e apresentação das respostas. |
-| `config.py` | `.env`, caminhos, modelo, timeout e limites de contexto. |
-| `models.py` | Enums, dataclasses e estruturas compartilhadas. |
-| `exceptions.py` | Exceções específicas e mensagens controladas. |
-| `data_loader.py` | Leitura dos arquivos CSV e JSON. |
-| `data_validator.py` | Validação estrutural e de consistência da base. |
-| `analytics.py` | Cálculos, agregações, metas e filtragem de produtos. |
-| `intent_classifier.py` | Classificação de intenção por regras reproduzíveis. |
-| `context_builder.py` | Seleção das fontes e montagem do contexto. |
-| `deterministic_responses.py` | Respostas imediatas baseadas nos cálculos. |
-| `prompts.py` | System prompt e serialização compacta do contexto. |
-| `llm_client.py` | Comunicação isolada com Ollama e modelo configurado. |
-| `response_validator.py` | Segurança, catálogo e fidelidade numérica. |
-| `performance.py` | Temporização e normalização das métricas do Ollama. |
-| `orchestrator.py` | Coordenação do fluxo completo. |
+| `app.py` | Interface Streamlit e apresentação. |
+| `config.py` | `.env`, caminhos e limites. |
+| `models.py` | Enums e dataclasses. |
+| `exceptions.py` | Erros controlados. |
+| `data_loader.py` | Leitura de CSV e JSON. |
+| `data_validator.py` | Validação da base. |
+| `analytics.py` | Cálculos e filtros. |
+| `intent_classifier.py` | Classificação por regras. |
+| `context_builder.py` | Seleção de fontes e contexto. |
+| `deterministic_responses.py` | Respostas sem LLM. |
+| `prompts.py` | System prompt e serialização. |
+| `llm_client.py` | Comunicação com Ollama e JSON Schema. |
+| `response_validator.py` | Segurança, catálogo, números e histórico. |
+| `performance.py` | Métricas. |
+| `orchestrator.py` | Coordenação, validação e fallbacks. |
 
-## Configurações
-
-`config.py` oferece uma instância imutável:
+## Configuração
 
 ```python
 from src.config import SETTINGS
 ```
 
-Principais campos:
+Campos principais:
 
 ```python
 SETTINGS.ollama_host
@@ -104,48 +139,57 @@ SETTINGS.max_user_message_chars
 SETTINGS.log_level
 ```
 
-`OLLAMA_NUM_CTX`, `OLLAMA_NUM_PREDICT` e `MAX_USER_MESSAGE_CHARS` devem ser
-inteiros maiores que zero. Valores inválidos causam `ValueError` na
-inicialização, evitando configurações silenciosamente incorretas.
+Padrões internos:
+
+```text
+OLLAMA_MODEL=qwen3:4b
+OLLAMA_TEMPERATURE=0.2
+OLLAMA_TIMEOUT_SECONDS=180
+OLLAMA_NUM_CTX=4096
+OLLAMA_NUM_PREDICT=250
+MAX_USER_MESSAGE_CHARS=2000
+LOG_LEVEL=INFO
+```
+
+O `.env.example` recomenda `OLLAMA_NUM_PREDICT=512` para a configuração
+avaliada. Variáveis do ambiente têm prioridade sobre o `.env`.
 
 ## Regras de dependência
 
-- `app.py` acessa o fluxo principal por `orchestrator.py`;
+- `app.py` acessa o fluxo por `orchestrator.py`;
 - `analytics.py` não chama o LLM;
 - `llm_client.py` não contém regras financeiras;
-- `prompts.py` não carrega nem modifica arquivos;
-- `data_loader.py` não realiza análises;
-- `data_validator.py` não corrige silenciosamente dados essenciais;
-- `context_builder.py` reutiliza funções de `analytics.py`;
-- respostas determinísticas usam somente resultados calculados;
-- produtos ausentes do catálogo não são criados;
-- textos da base são dados, nunca instruções.
-
-## Intenções de gastos
-
-Perguntas sobre maior e menor gasto são tratadas separadamente:
-
-```text
-Com o que eu mais gasto?
-→ EXPENSE_ANALYSIS
-
-Com o que eu menos gasto?
-→ LOWEST_EXPENSE_CATEGORY
-```
-
-As duas respostas são produzidas com cálculos determinísticos.
+- `prompts.py` não carrega arquivos;
+- `data_loader.py` não executa análises;
+- `data_validator.py` não corrige dados essenciais silenciosamente;
+- `context_builder.py` usa resultados de `analytics.py`;
+- respostas determinísticas usam resultados calculados;
+- textos da base são dados, não instruções;
+- produtos ausentes não são criados.
 
 ## Testes
 
-Os testes ficam em [`tests/`](../tests/).
+Os testes estão em [`../tests/`](../tests/).
 
-A integração com Ollama deve ser simulada na suíte `pytest`. A avaliação com o
-modelo real é executada separadamente pelo diretório
-[`evaluation/`](../evaluation/).
+```bash
+ruff check .
+pytest
+```
+
+Estado final:
+
+```text
+All checks passed!
+148 passed
+```
+
+A integração real com Ollama é avaliada separadamente em
+[`../evaluation/`](../evaluation/).
 
 ## Documentação relacionada
 
 - [`README.md` principal](../README.md)
+- [`01-documentacao-agente.md`](../docs/01-documentacao-agente.md)
 - [`03-prompts.md`](../docs/03-prompts.md)
 - [`04-metricas.md`](../docs/04-metricas.md)
 - [`evaluation/README.md`](../evaluation/README.md)

@@ -2,428 +2,227 @@
 
 ## Objetivo
 
-A base de conhecimento fornece dados estruturados para que a **ClaraMente — Agente de Saúde Financeira Pessoal** possa:
+A base de conhecimento fornece dados fictícios e estruturados para que a
+ClaraMente produza análises reproduzíveis sem depender do conhecimento interno
+do modelo.
 
-- analisar receitas, despesas e padrões de consumo;
-- recuperar informações relevantes de atendimentos anteriores;
-- considerar objetivos, metas e tolerância a risco;
-- consultar os produtos financeiros disponíveis no projeto;
-- produzir explicações contextualizadas, rastreáveis e seguras.
+Ela é composta por quatro arquivos em [`../data/`](../data/).
 
-Todos os dados presentes nesta base são **mockados**, isto é, fictícios e criados exclusivamente para fins educacionais, testes e demonstração. O repositório não deve conter dados financeiros reais, informações pessoais reais ou credenciais de usuários.
+## Fontes
 
----
-
-## Dados Utilizados
-
-Os arquivos da base de conhecimento estão armazenados na pasta [`data/`](../data/).
-
-| Arquivo | Formato | Papel na base | Utilização pela ClaraMente |
-|---|---|---|---|
-| [`transacoes.csv`](../data/transacoes.csv) | CSV | Dados transacionais mockados | Calcular receitas, despesas, saldo, participação por categoria e padrões de gastos. |
-| [`historico_atendimento.csv`](../data/historico_atendimento.csv) | CSV | Histórico mockado de interações | Recuperar temas já discutidos e fornecer continuidade ao atendimento. |
-| [`perfil_investidor.json`](../data/perfil_investidor.json) | JSON | Perfil financeiro mockado | Contextualizar objetivos, metas, patrimônio, reserva de emergência e tolerância a risco. |
-| [`produtos_financeiros.json`](../data/produtos_financeiros.json) | JSON | Catálogo mockado de produtos | Consultar apenas os produtos disponíveis na base e avaliar sua compatibilidade com o perfil informado. |
-
-### Classificação das fontes
-
-Cada arquivo possui uma responsabilidade específica e não deve ser usado fora de seu contexto.
-
-| Tipo de fonte | Arquivo | Uso permitido |
+| Arquivo | Formato | Uso |
 |---|---|---|
-| Fonte transacional | `transacoes.csv` | Sustentar cálculos objetivos sobre entradas, saídas, saldo e categorias de gastos. |
-| Contexto histórico | `historico_atendimento.csv` | Recuperar assuntos e necessidades anteriores, sem tratá-los como comprovação de movimentações financeiras. |
-| Perfil do usuário | `perfil_investidor.json` | Contextualizar objetivos, metas e restrições pessoais do cenário mockado. |
-| Catálogo de produtos | `produtos_financeiros.json` | Servir como única fonte autorizada para citar produtos financeiros disponíveis no projeto. |
+| [`transacoes.csv`](../data/transacoes.csv) | CSV | Entradas, saídas, categorias e períodos. |
+| [`historico_atendimento.csv`](../data/historico_atendimento.csv) | CSV | Temas de atendimentos anteriores. |
+| [`perfil_investidor.json`](../data/perfil_investidor.json) | JSON | Perfil, objetivos, metas e tolerância a risco. |
+| [`produtos_financeiros.json`](../data/produtos_financeiros.json) | JSON | Catálogo fechado. |
 
----
+Todos os dados são fictícios e usados somente para estudo.
 
-## Estrutura dos Dados
+## Estrutura dos dados
 
 ### `transacoes.csv`
 
-O arquivo contém as movimentações financeiras utilizadas nas análises de receitas e despesas.
+Campos esperados:
 
-| Campo | Tipo esperado | Obrigatório | Descrição | Regra de validação |
-|---|---|---:|---|---|
-| `data` | Data | Sim | Data da movimentação financeira. | Deve ser uma data válida no formato `AAAA-MM-DD`. |
-| `descricao` | Texto | Sim | Identificação resumida da movimentação. | Não pode estar vazia. |
-| `categoria` | Texto | Sim | Categoria associada à movimentação. | Deve ser normalizada antes das agregações. |
-| `valor` | Decimal | Sim | Valor monetário da movimentação. | Deve ser numérico, não nulo e maior ou igual a zero. |
-| `tipo` | Texto | Sim | Indica se a movimentação é uma entrada ou saída. | Deve possuir um dos valores esperados: `entrada` ou `saida`. |
+| Campo | Uso |
+|---|---|
+| `data` | Período e ordenação. |
+| `descricao` | Identificação da movimentação. |
+| `categoria` | Agrupamento das despesas. |
+| `valor` | Valor monetário. |
+| `tipo` | Entrada ou saída. |
 
-Categorias presentes na versão inicial:
-
-- `receita`;
-- `moradia`;
-- `alimentacao`;
-- `lazer`;
-- `saude`;
-- `transporte`.
-
-A categoria e o tipo representam conceitos diferentes:
-
-- **categoria** descreve a finalidade da movimentação;
-- **tipo** determina se o valor aumenta ou reduz o saldo.
-
-Por exemplo, uma transação pode possuir categoria `moradia` e tipo `saida`.
-
----
+O carregamento converte datas e valores para tipos apropriados. Os cálculos
+consideram somente registros válidos.
 
 ### `historico_atendimento.csv`
 
-O arquivo registra interações anteriores do cenário mockado.
+Campos utilizados pelo cenário:
 
-| Campo | Tipo esperado | Obrigatório | Descrição | Regra de validação |
-|---|---|---:|---|---|
-| `data` | Data | Sim | Data do atendimento. | Deve ser válida e seguir o formato `AAAA-MM-DD`. |
-| `canal` | Texto | Sim | Canal pelo qual ocorreu a interação. | Deve ser normalizado para comparação e filtros. |
-| `tema` | Texto | Sim | Assunto principal do atendimento. | Não pode estar vazio. |
-| `resumo` | Texto | Sim | Síntese da solicitação ou solução. | Não pode estar vazio. |
-| `resolvido` | Texto ou booleano normalizado | Sim | Indica se o atendimento foi concluído. | Valores textuais devem ser convertidos para uma representação booleana consistente. |
+| Campo | Uso |
+|---|---|
+| `data` | Data do atendimento. |
+| `tema` | Assunto principal. |
+| `resumo` | Síntese do registro. |
 
-O histórico serve para contextualizar a conversa, mas não substitui os dados transacionais nem comprova saldos, aplicações ou movimentações.
-
----
+O histórico confirma que um assunto foi registrado. Ele não comprova
+movimentações financeiras nem substitui a base de transações.
 
 ### `perfil_investidor.json`
 
-O arquivo representa o perfil financeiro do usuário fictício.
+O arquivo reúne informações do perfil, como:
 
-| Campo | Tipo esperado | Obrigatório | Descrição |
-|---|---|---:|---|
-| `nome` | Texto | Sim | Nome fictício utilizado no cenário. |
-| `idade` | Inteiro | Sim | Idade do perfil mockado. |
-| `profissao` | Texto | Sim | Ocupação profissional fictícia. |
-| `renda_mensal` | Decimal | Sim | Renda mensal informada no cenário. |
-| `perfil_investidor` | Texto | Sim | Classificação declarada do perfil de investimento. |
-| `objetivo_principal` | Texto | Sim | Principal objetivo financeiro. |
-| `patrimonio_total` | Decimal | Sim | Patrimônio total informado. |
-| `reserva_emergencia_atual` | Decimal | Sim | Valor atual da reserva de emergência. |
-| `aceita_risco` | Booleano | Sim | Indica se o perfil declara aceitar risco. |
-| `metas` | Lista de objetos | Sim | Conjunto de metas financeiras. |
+- classificação do investidor;
+- tolerância a risco;
+- objetivos;
+- metas;
+- preferências e restrições.
 
-Cada item de `metas` contém:
-
-| Campo | Tipo esperado | Obrigatório | Descrição |
-|---|---|---:|---|
-| `meta` | Texto | Sim | Nome ou descrição da meta. |
-| `valor_necessario` | Decimal | Sim | Valor necessário para alcançar a meta. |
-| `prazo` | Texto no formato de data parcial | Sim | Prazo esperado no formato `AAAA-MM`. |
-
-A aplicação deve validar possíveis inconsistências entre campos. Por exemplo, a classificação `moderado` não deve, isoladamente, anular a informação explícita `aceita_risco: false`. Em caso de conflito, a ClaraMente deve apresentar a divergência e evitar conclusões categóricas.
-
----
+A base atual contém uma inconsistência intencional entre o perfil declarado e
+a aceitação de risco. O sistema deve sinalizar essa divergência antes de
+avaliar produtos.
 
 ### `produtos_financeiros.json`
 
-O arquivo funciona como catálogo fechado de produtos disponíveis no cenário.
+Cada produto possui atributos usados na filtragem, por exemplo:
 
-| Campo | Tipo esperado | Obrigatório | Descrição |
-|---|---|---:|---|
-| `nome` | Texto | Sim | Nome do produto financeiro. |
-| `categoria` | Texto | Sim | Categoria do produto. |
-| `risco` | Texto | Sim | Nível de risco informado na base. |
-| `rentabilidade` | Texto | Sim | Referência de rentabilidade fornecida no cenário. |
-| `aporte_minimo` | Decimal | Sim | Valor mínimo de aplicação. |
-| `indicado_para` | Texto | Sim | Descrição do público ou objetivo compatível. |
+- nome;
+- tipo;
+- nível de risco;
+- rentabilidade;
+- aporte mínimo;
+- indicação de perfil.
 
-A ClaraMente não deve:
+O arquivo é um catálogo fechado. Produtos ausentes não podem ser inventados.
 
-- inventar produtos ausentes no arquivo;
-- assumir taxas, liquidez, tributação ou garantias que não estejam registradas;
-- tratar a rentabilidade textual como promessa de retorno;
-- apresentar a compatibilidade encontrada como recomendação profissional definitiva.
+## Carregamento e validação
 
----
+```text
+data/
+  ↓
+data_loader.py
+  ↓
+KnowledgeBase
+  ↓
+data_validator.py
+  ↓
+ValidationReport
+```
 
-## Adaptações nos Dados
+### Responsabilidades
 
-Nesta etapa, os arquivos mockados fornecidos pelo desafio serão preservados em sua estrutura original.
+`data_loader.py`:
 
-A aplicação poderá realizar transformações apenas em memória, sem modificar os arquivos-fonte:
+- lê CSV e JSON;
+- converte os dados para estruturas usadas pela aplicação;
+- não executa análises;
+- não corrige silenciosamente inconsistências essenciais.
 
-- conversão das datas para tipos apropriados;
-- conversão dos valores monetários para tipos numéricos;
-- normalização de categorias e textos;
-- conversão de indicadores textuais para booleanos;
-- ordenação cronológica;
-- tratamento de campos ausentes;
-- identificação de registros duplicados;
-- geração de indicadores agregados;
-- montagem de resumos estruturados para o modelo de linguagem.
+`data_validator.py`:
 
-Manter os arquivos originais permite:
+- verifica colunas e campos obrigatórios;
+- valida tipos e valores;
+- identifica inconsistências;
+- pode interromper o fluxo quando a base não é segura para análise.
 
-- preservar a rastreabilidade dos dados de entrada;
-- reproduzir os resultados;
-- comparar o dado bruto com o dado processado;
-- evitar alterações silenciosas na fonte.
+## Seleção por intenção
 
-Caso os arquivos sejam expandidos futuramente, as mudanças deverão ser documentadas nesta seção, incluindo campos adicionados, regras de preenchimento e impacto nas análises.
+O sistema não envia toda a base ao modelo em todas as perguntas.
 
----
-
-## Estratégia de Integração
-
-### Como os dados são carregados?
-
-A aplicação Python carrega os arquivos localmente no início da sessão ou sob demanda, conforme a análise solicitada.
-
-O fluxo previsto é:
-
-1. localizar os arquivos na pasta `data/`;
-2. verificar se todos os arquivos obrigatórios existem;
-3. carregar os arquivos CSV com [pandas](https://pandas.pydata.org/);
-4. carregar os arquivos JSON com os recursos nativos do [Python](https://www.python.org/);
-5. validar estrutura, tipos e campos obrigatórios;
-6. normalizar os dados em memória;
-7. disponibilizar estruturas confiáveis para a camada de análise.
-
-Erros de leitura ou validação devem ser tratados antes da montagem do contexto. A aplicação não deve enviar ao modelo dados incompletos como se fossem válidos.
-
-### Validações mínimas
-
-Antes do uso, a aplicação deve verificar:
-
-- existência e legibilidade dos arquivos;
-- presença das colunas e chaves obrigatórias;
-- tipos e formatos esperados;
-- datas inválidas;
-- valores monetários nulos ou não numéricos;
-- valores negativos incompatíveis com o modelo adotado;
-- registros duplicados;
-- categorias ou tipos desconhecidos;
-- consistência das metas financeiras;
-- consistência entre perfil declarado e tolerância a risco;
-- integridade dos registros do catálogo de produtos.
-
-Quando uma validação falhar, a resposta deve indicar a limitação ou a aplicação deve interromper a análise com uma mensagem clara. Não se deve preencher automaticamente uma informação essencial ausente.
-
----
-
-### Como os dados são selecionados?
-
-A base de conhecimento não deve ser enviada integralmente ao modelo em todas as interações.
-
-A camada de aplicação identifica a intenção da pergunta e seleciona apenas as fontes necessárias.
-
-| Intenção da pergunta | Fontes principais |
+| Intenção | Fontes principais |
 |---|---|
-| Analisar receitas, despesas ou saldo | `transacoes.csv` |
-| Comparar categorias ou períodos | `transacoes.csv` |
-| Identificar assuntos já discutidos | `historico_atendimento.csv` |
-| Avaliar o progresso de metas | `perfil_investidor.json` e `transacoes.csv`, quando necessário |
-| Consultar opções disponíveis | `perfil_investidor.json` e `produtos_financeiros.json` |
-| Verificar compatibilidade com um produto | `perfil_investidor.json` e `produtos_financeiros.json` |
-| Produzir uma visão financeira integrada | Todas as fontes relevantes para a solicitação |
+| Resumo financeiro | transações |
+| Maior ou menor gasto | transações |
+| Comparação de períodos | transações |
+| Meta financeira | perfil |
+| Histórico | histórico de atendimento |
+| Produtos | perfil e catálogo |
+| Mercado atual | nenhuma fonte atual disponível |
+| Fora do escopo | nenhuma fonte financeira |
+| Solicitação ilícita | resposta determinística |
 
-Essa seleção reduz:
+Essa seleção reduz ruído, latência e risco de exposição desnecessária.
 
-- uso desnecessário da janela de contexto;
-- exposição de dados não relacionados à pergunta;
-- ruído na interpretação do modelo;
-- risco de respostas baseadas em informações irrelevantes.
+## Processamento determinístico
 
----
-
-## Processamento Determinístico
-
-Os cálculos financeiros devem ser executados pela aplicação com Python e pandas, e não delegados ao modelo de linguagem.
-
-Entre os cálculos previstos estão:
+Python e pandas calculam:
 
 - total de entradas;
 - total de saídas;
-- saldo do período;
-- total por categoria;
-- participação percentual de cada categoria;
-- comparação entre períodos;
-- variação absoluta e percentual;
-- identificação de possíveis despesas recorrentes;
-- diferença entre o valor atual e o valor necessário para uma meta;
-- percentual de progresso de uma meta;
-- filtragem de produtos por risco, aporte mínimo e finalidade declarada.
+- saldo;
+- quantidade de transações;
+- período analisado;
+- maior categoria;
+- menor categoria;
+- participação percentual;
+- progresso e valor restante de metas;
+- disponibilidade de períodos para comparação;
+- produtos autorizados pelo catálogo e pelo contexto.
 
-O **Qwen3 4B**, executado localmente pelo **Ollama**, recebe os resultados já calculados e os transforma em uma explicação acessível.
+O LLM não recalcula esses resultados.
 
-Essa separação de responsabilidades reduz erros porque:
+## Contexto dinâmico
 
-- Python executa operações numéricas reproduzíveis;
-- pandas realiza filtros e agregações estruturadas;
-- o LLM interpreta a pergunta e redige a resposta;
-- as regras de negócio limitam conclusões não sustentadas pelos dados.
+O contexto enviado ao modelo contém somente informações relevantes:
 
----
-
-### Como os dados são usados no prompt?
-
-Os arquivos brutos não são inseridos diretamente no `system prompt`.
-
-O `system prompt` contém instruções permanentes sobre:
-
-- identidade e comportamento da ClaraMente;
-- tom de voz;
-- limites de atuação;
-- regras de segurança;
-- obrigação de declarar incertezas;
-- proibição de inventar dados ou produtos.
-
-Os dados selecionados para cada pergunta são enviados em um contexto dinâmico, separado das instruções permanentes.
-
-Esse contexto pode conter:
-
-1. intenção identificada;
-2. período analisado;
-3. fontes consultadas;
-4. filtros aplicados;
-5. resultados calculados;
-6. informações relevantes do perfil;
-7. produtos encontrados no catálogo;
-8. inconsistências ou dados ausentes;
-9. restrições específicas para a resposta.
-
-Sempre que possível, os registros brutos devem ser convertidos em resumos estruturados antes de serem enviados ao modelo.
-
----
-
-## Fluxo da Base de Conhecimento
-
-```mermaid
-flowchart TD
-    A[Arquivos mockados em data/] --> B[Carregamento local]
-    B --> C[Validação de estrutura e tipos]
-    C --> D[Normalização em memória]
-    D --> E[Seleção das fontes relevantes]
-    E --> F[Cálculos com Python e pandas]
-    F --> G[Contexto estruturado e reduzido]
-    G --> H[Ollama + Qwen3 4B]
-    H --> I[Validação da resposta]
-    I --> J[Resposta da ClaraMente]
+```json
+{
+  "intencao": "product_compatibility",
+  "fontes_consultadas": [
+    "data/perfil_investidor.json",
+    "data/produtos_financeiros.json"
+  ],
+  "resultados_calculados": {},
+  "produtos": [],
+  "produtos_autorizados": [
+    "CDB Liquidez Diária",
+    "Tesouro Selic"
+  ],
+  "inconsistencias": [
+    "Há divergência entre perfil_investidor e aceita_risco."
+  ],
+  "dados_ausentes": [],
+  "restricoes_especificas": [
+    "Os dados são mockados e têm finalidade educacional."
+  ]
+}
 ```
 
----
+O exemplo é ilustrativo; os valores concretos são montados pela aplicação.
 
-## Exemplo de Contexto Montado
+## Produtos e metadados
 
-O exemplo abaixo é apenas ilustrativo. Seus valores não devem ser interpretados como o resultado real da base sem que a aplicação execute os cálculos correspondentes.
+Respostas de produtos usam um objeto JSON com dois campos:
 
-```text
-IDENTIDADE DO AGENTE:
-ClaraMente — Agente de Saúde Financeira Pessoal
-
-INTENÇÃO:
-Analisar a distribuição das despesas no período informado.
-
-FONTES CONSULTADAS:
-- data/transacoes.csv
-
-PERÍODO:
-2025-10-01 a 2025-10-31
-
-FILTROS:
-- tipo = saida
-
-RESULTADOS CALCULADOS PELA APLICAÇÃO:
-- Total de entradas: [valor calculado]
-- Total de saídas: [valor calculado]
-- Saldo do período: [valor calculado]
-- Categoria com maior gasto: [categoria calculada]
-- Participação da categoria: [percentual calculado]
-
-DADOS AUSENTES OU LIMITAÇÕES:
-- Não há orçamento mensal definido por categoria.
-- A base contém somente um período curto de transações mockadas.
-
-RESTRIÇÕES PARA A RESPOSTA:
-- Não classificar um gasto como excessivo sem uma meta ou referência.
-- Diferenciar fatos calculados de sugestões educacionais.
-- Não inventar transações, categorias ou períodos.
-- Informar que a análise utiliza dados mockados.
+```json
+{
+  "resposta": "Texto apresentado ao usuário.",
+  "produtos_mencionados": []
+}
 ```
 
-### Exemplo de contexto para consulta de produtos
+`produtos_mencionados` permite comparar os nomes declarados pelo modelo com:
 
-```text
-INTENÇÃO:
-Apresentar produtos do catálogo compatíveis com o objetivo de reserva de emergência.
+- o catálogo autorizado;
+- os produtos permitidos para o contexto;
+- os nomes realmente citados no texto.
 
-FONTES CONSULTADAS:
-- data/perfil_investidor.json
-- data/produtos_financeiros.json
+## Histórico e fallback
 
-DADOS RELEVANTES DO PERFIL:
-- Objetivo principal: Construir reserva de emergência
-- Aceita risco: false
-- Perfil declarado: moderado
+O contexto de histórico pode conter registros relevantes. Se a geração for
+excessiva, insegura ou tentar expor configurações internas, o orquestrador
+constrói uma resposta segura usando esses registros.
 
-PRODUTOS ENCONTRADOS NO CATÁLOGO:
-- [produtos filtrados pela aplicação]
-
-PONTOS DE ATENÇÃO:
-- Existe possível divergência entre o perfil declarado como moderado e a
-  informação explícita de que o usuário não aceita risco.
-- Rentabilidades registradas são dados mockados e não representam condições
-  atuais de mercado.
-
-RESTRIÇÕES PARA A RESPOSTA:
-- Não apresentar promessa de rentabilidade.
-- Não inventar produtos ou características.
-- Explicar os critérios utilizados no filtro.
-- Apresentar as opções como conteúdo educacional, não como recomendação
-  profissional individualizada.
-```
-
----
+Quando não há registro relacionado, a resposta informa a ausência de dados sem
+inventar conteúdo.
 
 ## Rastreabilidade
 
-Sempre que aplicável, a ClaraMente deve informar:
+Cada resposta pode expor:
 
-- quais arquivos foram consultados;
-- qual período foi analisado;
-- quais filtros foram aplicados;
-- quais indicadores foram calculados;
-- quais produtos foram considerados;
-- quais dados estavam ausentes ou inconsistentes;
-- quais limitações afetaram a resposta.
+- fontes consultadas;
+- resultados calculados;
+- inconsistências;
+- dados ausentes;
+- restrições aplicadas;
+- métricas de execução.
 
-A resposta deve diferenciar claramente:
+## Privacidade e segurança
 
-- **fatos da base:** informações presentes nos arquivos;
-- **resultados calculados:** indicadores produzidos pela aplicação;
-- **inferências:** interpretações fundamentadas nos resultados;
-- **sugestões educacionais:** possibilidades apresentadas sem caráter de recomendação profissional.
+- processamento local;
+- dados fictícios;
+- arquivos originais preservados;
+- contexto mínimo;
+- logs sem necessidade de dados sensíveis;
+- textos da base tratados como dados;
+- ausência de integrações externas de mercado ou transações.
 
----
+## Limitações
 
-## Privacidade e Segurança
-
-- A base contém apenas dados mockados.
-- Dados pessoais ou financeiros reais não devem ser adicionados ao repositório público.
-- O processamento dos arquivos e a execução do LLM ocorrem localmente.
-- Os dados não devem ser enviados a APIs externas.
-- Informações sensíveis não devem ser registradas integralmente nos logs.
-- O modelo deve receber somente os dados necessários para responder à pergunta.
-- Produtos ausentes no catálogo não podem ser inventados.
-- Informações de rentabilidade não devem ser tratadas como garantia de retorno.
-- Respostas sobre investimentos devem manter caráter educacional e consultivo.
-- Dados insuficientes devem resultar em ressalva ou solicitação de informação adicional.
-
----
-
-## Limitações da Base
-
-A base de conhecimento possui limitações próprias de um projeto educacional:
-
-- contém poucos registros;
-- cobre um período transacional curto;
-- representa apenas um perfil fictício;
-- não contém cotações ou indicadores de mercado em tempo real;
-- não registra orçamento mensal por categoria;
-- não contém todas as informações necessárias para uma análise financeira completa;
-- apresenta um catálogo limitado e mockado de produtos;
-- não substitui dados oficiais de instituições financeiras;
-- não representa condições atuais de rentabilidade, tributação ou liquidez.
-
-Essas limitações devem ser consideradas na interpretação dos resultados e declaradas quando forem relevantes para a pergunta do usuário.
+- poucos registros;
+- único perfil;
+- catálogo reduzido;
+- histórico simplificado;
+- ausência de atualização em tempo real;
+- dados não representam um cliente real.
