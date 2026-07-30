@@ -57,6 +57,7 @@ models/
 .streamlit/cache/
 
 # IDEs e editores
+.vscode/settings.json
 .idea/
 *.swp
 *.swo
